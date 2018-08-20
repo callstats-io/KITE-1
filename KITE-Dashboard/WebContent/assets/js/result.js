@@ -18,6 +18,7 @@ var defaultBrowser = 'all';
 var defaultVersion = 'all';
 var defaultPlatform = 'all';
 var currentResultList = jsonResultList;
+var allResults = currentResultList.slice();
 var filteredByBrowserResultList = currentResultList.slice();
 var filteredByOsResultList = currentResultList.slice();
 var overallStats = [0,0,0,0];
@@ -316,24 +317,52 @@ $(document).on("click", ".clear", function(e) {
 });
 
 function filterByResult(type){
-  (function requestByResult() {
-      $.ajax({
-          url: 'getjson?resultTableName='+resultTableName+'&testId='+testId+'&type='+type,
-          success: function(result){
-            currentResultList = JSON.parse(result);
-            console.log(currentResultList);
-            filteredByBrowserResultList = JSON.parse(result);
-            if (defaultBrowser != 'all') {
-              filterByBrowser();
+  if(!ready){
+    (function requestByResult() {
+        $.ajax({
+            url: 'getjson?resultTableName='+resultTableName+'&testId='+testId+'&type='+type,
+            success: function(result){
+              console.log();
+              currentResultList = JSON.parse(result);
+              console.log(currentResultList);
+              filteredByBrowserResultList = JSON.parse(result);
+              if (defaultBrowser != 'all') {
+                filterByBrowser();
+              }
+              if (defaultPlatform != 'all') {
+                filterByOs();
+              }
+              populateResultContainer();
+              updateOverall();
             }
-            if (defaultPlatform != 'all') {
-              filterByOs();
-            }
-            populateResultContainer();
-            updateOverall();
+        });
+    })();
+  } else {
+    currentResultList = [];
+    switch (type) {
+      case 'ERROR':
+        allResults.forEach(function(result){
+          var value = result.result;
+          if(value !== 'SUCCESSFUL' && value !== 'SCHEDULED' && value !== 'FAILED') {
+            currentResultList.push(result);
           }
-      });
-  })();
+        });
+        break;
+      case 'all':
+        currentResultList = allResults.slice();
+        break;
+      default:
+        allResults.forEach(function(result){
+          var value = result.result;
+          if(value === type) {
+            currentResultList.push(result);
+          }
+        });
+        break;
+    }
+    populateResultContainer();
+    updateOverall();
+  }
 }
 
 function filterByBrowser () {

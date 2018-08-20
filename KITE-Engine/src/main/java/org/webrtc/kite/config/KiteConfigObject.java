@@ -59,6 +59,7 @@ public abstract class KiteConfigObject implements Cloneable {
 
   @Override public String toString() {
     return this.getJsonObject().toString();
+
   }
 
 }

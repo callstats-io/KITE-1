@@ -1,9 +1,7 @@
 package org.webrtc.kite.wpt;
 
-import org.openqa.selenium.By;
-import org.openqa.selenium.JavascriptExecutor;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
+import org.openqa.selenium.*;
+import org.openqa.selenium.remote.RemoteWebDriver;
 
 import javax.json.Json;
 import javax.json.JsonObject;
@@ -281,5 +279,54 @@ public class Utility {
       }
     }
     return res;
+  }
+
+
+  /**
+   * Input a vlue to a specific field with id.
+   * @param webDriver browser in question
+   * @param id id of the field element
+   * @param value value to input
+   */
+  public static void input(WebDriver webDriver, String id, String value){
+    String script = "document.getElementById('" + id + "').value = '" + value + "'";
+    ((JavascriptExecutor) webDriver).executeScript(script);
+  }
+
+  /**
+   * Input a vlue to a specific field with id.
+   * @param webDriver browser in question
+   * @param id id of the field element
+   */
+
+  public static void click(WebDriver webDriver, String id){
+    String script = "document.getElementById('" + id + "').click()";
+    ((JavascriptExecutor) webDriver).executeScript(script);
+  }
+
+  /**
+   * Handles alert popup if exists
+   * @param webDriver
+   * @return String alert message
+   */
+  public static String alertHandling(WebDriver webDriver){
+    String alertMsg;
+    try {
+      Alert alert = webDriver.switchTo().alert();
+      alertMsg = alert.getText();
+      if (alertMsg != null) {
+        alertMsg =
+                ((RemoteWebDriver) webDriver).getCapabilities().getBrowserName()
+                        + " alert: "
+                        + alertMsg;
+        alert.accept();
+      }
+    } catch (ClassCastException e) {
+      alertMsg = " Cannot retrieve alert message due to alert.getText() class cast problem.";
+      webDriver.switchTo().alert().accept();
+    } catch (Exception e) {
+      alertMsg = null;
+    }
+    return alertMsg;
   }
 }

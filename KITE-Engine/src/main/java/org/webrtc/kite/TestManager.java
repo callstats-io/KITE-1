@@ -292,6 +292,10 @@ public class TestManager implements Callable<Object> {
 
         test.setWebDriverList(this.webDriverList);
         test.setPayload(this.testConf.getPayload());
+        String commandName = Configurator.getInstance().getCommandName();
+        if (commandName != null) {
+          test.setCommandName(commandName);
+        }
 
         logger.info(this.testConf.getName() + " :: Testing against :: " + this.browserList);
 

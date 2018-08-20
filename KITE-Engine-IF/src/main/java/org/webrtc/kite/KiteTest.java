@@ -38,6 +38,9 @@ public abstract class KiteTest {
 
   private List<WebDriver> webDriverList;
 
+  private String commandName;
+
+
   protected JsonValue getPayload() {
     return this.payload;
   }
@@ -53,6 +56,27 @@ public abstract class KiteTest {
 
   protected List<WebDriver> getWebDriverList() {
     return this.webDriverList;
+  }
+
+
+
+
+  /**
+   * Sets the command name for the NW instrumentation.
+   *
+   * @param commandName name of the command
+   */
+  public void setCommandName(String commandName) {
+    this.commandName = commandName;
+  }
+
+  /**
+   * Gets the command name for the NW instrumentation.
+   *
+   * @return the name of the command
+   */
+  public String getCommandName() {
+    return this.commandName;
   }
 
   /**

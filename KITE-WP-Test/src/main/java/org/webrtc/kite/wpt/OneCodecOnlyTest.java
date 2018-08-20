@@ -79,29 +79,14 @@ public class OneCodecOnlyTest extends KiteTest {
     payloadHandling();
     final String channelId = Long.toString(Math.abs(rand.nextLong()));
     for (WebDriver webDriver : this.getWebDriverList()) {
+      url = "https://kite-testing.dev.cosmosoftware.io:8083/tests/video.codecs/h-264.html";
       if (url == null) {
         throw new Exception("No URL was specified");
       }
       webDriver.get(url);
-      webDriver.findElement(By.id(CHANNEL_INPUT)).sendKeys(channelId);
-      webDriver.findElement(By.id(CHANNEL_INPUT)).sendKeys(Keys.ENTER);
-      //webDriver.findElement(By.id(START_BUTTON)).click();
-      try {
-        Alert alert = webDriver.switchTo().alert();
-        //alertMsg = alert.getText();URL
-        if (alertMsg != null) {
-          alertMsg =
-                  ((RemoteWebDriver) webDriver).getCapabilities().getBrowserName()
-                          + " alert: "
-                          + alertMsg;
-          alert.accept();
-        }
-      } catch (NoAlertPresentException e) {
-        alertMsg = null;
-      } catch (ClassCastException e) {
-        alertMsg = " Cannot retrieve alert message due to alert.getText() class cast problem";
-        webDriver.switchTo().alert().accept();
-      }
+      input(webDriver, CHANNEL_INPUT, channelId);
+      click(webDriver, START_BUTTON);
+      alertMsg = alertHandling(webDriver);
     }
   }
 

@@ -89,27 +89,13 @@ function displayScoreboard(){
        link += '=' + path + '&test';
     }
     content += '<tr><td class="test-name"><a href="?'+link+'='+testCategory+'" data-toggle="tooltip" data-placement="top" title="'+
-            scoreJson[listOfBrowsers[0]][testCategory]['description'] + '" class="small-boy">' + testCategory + '</a></td>';
+            /*scoreJson[listOfBrowsers[0]][testCategory]['description'] +*/ '" class="small-boy">' + testCategory + '</a></td>';
     listOfBrowsers.forEach(function(browser){
       var testCategoryResult = scoreJson[browser][testCategory];
       var total = testCategoryResult.total;
       var passed = testCategoryResult.passed;
       var class_name = '';
       var style = '';
-/*      if (total === 0){
-        class_name += 'non-existing"';
-      } else {
-        if (passed === 0) {
-          class_name += 'strange-color"';
-        } else {
-          var percent = 100*passed/total.toFixed(0);
-          if (percent > 50) {
-            class_name += 'ready"';
-          } else {
-            class_name += 'not-ready"';
-          }
-        }
-      }*/
       switch (color_code){
         case 'black':
           class_name += 'non-existing';
@@ -139,15 +125,12 @@ function displayScoreboard(){
           if (total === 0) {
             class_name += 'non-existing"';
           } else {
-            /*if (passed === 0){
-              class_name += 'non-passed"';
-            } else {*/
               if (passed === total) {
                 style += '255, 155, 0';
               } else {
                 var percent = 10*passed/total.toFixed(0);
-                var blue = 255 - 15*percent;
-                var green = 255 - 10*percent;
+                var blue = 105 + 15*percent;
+                var green = 155 + 10*percent;
                 style += 'background: rgb(255,' + green + ',' + blue +');';
               }
             /*}*/
@@ -170,8 +153,8 @@ function displayIndividualTests(){
   var content = '';
   var subTests = [];
   console.log("Displaying for: " + test);
+  var tuple = 0;
   var listOfBrowsers = Object.keys(scoreJson);
-  var listOfTestCategories = Object.keys(scoreJson[listOfBrowsers[0]]);
   listOfBrowsers.forEach(function(browser){
     var browserJson = scoreJson[browser];
     testJson = browserJson[''+test];
@@ -182,6 +165,9 @@ function displayIndividualTests(){
       if (Object.keys(tests).length > subTests.length){
         subTests = Object.keys(tests);
       }
+      if (tuple === 0){
+        tuple = tests.tuple;
+      }
     }
     var tmp = "";
     firstRow += '<th text-align="center" id="'+browser+'">';
@@ -191,25 +177,37 @@ function displayIndividualTests(){
   firstRow +='</tr>';
   console.log("sub tests: ");
   console.log(subTests);
+  console.log("tuple: ");
+  console.log(tuple);
 
   subTests.forEach( function(subTest){
-    content += '<tr><td class="test-name"><a class="small-boy">' + subTest + '</a></td>';
-    listOfBrowsers.forEach(function(browser){
-      var browserJson = scoreJson[browser];
-      testJson = browserJson[''+test];
-      if (Object.keys(testJson).length === 0 && testJson.constructor === Object){
-        content += '<td align="center" id="'+browser+'"><a class="small-boy"> tbd </a></td>'
-      } else {
-        var result = testJson.tests[subTest];
-        var style = 'style="background: rgb('
-        if (result === 'passed'){
-          style += '56, 234, 88';
+    if (subTest !== 'tuple') {
+      content += '<tr><td class="test-name"><a class="small-boy">' + subTest + '</a></td>';
+      listOfBrowsers.forEach(function(browser){
+        var browserJson = scoreJson[browser];
+        testJson = browserJson[''+test];
+        if (Object.keys(testJson).length === 0 && testJson.constructor === Object){
+          content += '<td align="center" id="' + browser + '"><a class="small-boy" data-browser="' + browser + '"> tbd </a></td>'
+        } else {
+          var result = testJson.tests[subTest];
+          console.log(result);
+          var style = 'style="background: rgb('
+          if (result === 'passed'){
+            style += '56, 234, 88';
+          }
+          style += ');"';
+          if (typeof result === 'undefined') {
+            result = 'N/A';
+          }
+          if (typeof tuple === 'undefined') {
+            tuple = 1;
+          }
+          content += '<td id="'+browser+'" '+style+'><div><a class="small-boy detail" ' +
+           ' data-browser="' + browser + '" data-testname="'+subTest+'" data-tuple="'+tuple+'">' + result + '</a></div></td>';
         }
-        style += ');"';
-        content += '<td id="'+browser+'" '+style+'><div><a class="small-boy detail">' + result[subTest] + '</a></div></td>';
-      }
-    });
-    content += '</tr>'
+      });
+      content += '</tr>'
+    }
   })
   scoreboardHead.html(firstRow);
   scoreboardBody.html(content);
@@ -231,7 +229,7 @@ function getClientHTML(browser, timeStamp){
       }
       break;
     case 'firefox':
-      if (version==='60.0'){
+      if (version==='61.0'){
         logo = 'firefox';
       } else {
         logo = 'nightly';
@@ -316,7 +314,11 @@ $(document).ready(function(){
   });
 
   $(document).on("click", ".detail", function(e) {
-    alert('coming soon!');
+    var tuple = $(this).attr('data-tuple');
+    if (tuple !== '1') {
+      var testName = $(this).attr('data-testname');
+      window.open('results?ready='+testName);
+    }
   });
 
   $('#back-to-top').tooltip('show');

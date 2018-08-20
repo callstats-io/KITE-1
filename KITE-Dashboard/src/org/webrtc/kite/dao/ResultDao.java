@@ -409,8 +409,8 @@ public class ResultDao {
    * @return
    * @throws SQLException
    */
-  public String getLatestResultByBrowser(String tableName, String browsers) throws SQLException {
-    String query = "SELECT RESULT FROM " + tableName + " WHERE BROWSERS='" + browsers + "' AND RESULT <> 'SCHEDULED' " +
+  public Result getLatestResultByBrowser(String tableName, String browsers) throws SQLException {
+    String query = "SELECT * FROM " + tableName + " WHERE BROWSERS='" + browsers + "' AND RESULT <> 'SCHEDULED' " +
         "ORDER BY START_TIME DESC LIMIT 1";
     PreparedStatement ps = null;
     ResultSet rs = null;
@@ -432,7 +432,7 @@ public class ResultDao {
           }
           log.trace(rsLog.toString());
         }
-        return rs.getString("RESULT");
+        return buildResult(rs);
       }
     } finally {
       Utility.closeDBResources(ps, rs);

@@ -21,6 +21,7 @@ import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.webrtc.kite.MatrixRunner;
 import org.webrtc.kite.config.Configurator;
+import org.webrtc.kite.config.Instrumentation;
 import org.webrtc.kite.config.TestConf;
 
 import java.util.List;
@@ -40,42 +41,65 @@ public class MatrixRunnerJob extends KiteJob {
     this.makeUpTheGrid();
     Configurator.getInstance().setTimeStamp();
 
-    for (TestConf testConf : (List<TestConf>) Configurator.getInstance().getConfigHandler()
-        .getTestList()) {
-      try {
-        if (logger.isInfoEnabled()) {
-          logger.info("Running " + testConf + " ...");
-        }
+    int iterations = 0, index = 0;
+    Instrumentation instrumentation = Configurator.getInstance().getInstrumentation();
+    if (instrumentation != null)
+      iterations = instrumentation.getScenarios().size();
 
-        List<Future<Object>> listOfResults = new MatrixRunner(testConf,
-            Configurator.getInstance().buildTuples(testConf.getTupleSize()), testConf.getName())
-            .run();
-
-        if (listOfResults != null) {
-          if (logger.isInfoEnabled()) {
-            String testResults = "The following are results for " + testConf + ":\n";
-            for (Future<Object> future : listOfResults) {
-              try {
-                testResults += "\r\n" + future.get().toString();
-              } catch (Exception e) {
-                logger.error("Exception while test execution", e);
-              }
-            }
-            testResults += "\r\nEND OF RESULTS\r\n";
-            logger.info(testResults);
-          }
-        } else {
-          logger.warn("No test case was found.");
+    do {
+      if (instrumentation != null) {
+        try {
+          instrumentation.runCommand(index);
+        } catch (Exception e) {
+          logger.warn("Exception while running commands", e);
         }
-      } catch (InterruptedException e) {
-        logger.fatal("Error [Interruption]: The execution has been interrupted with the "
-            + "following error: " + e.getLocalizedMessage(), e);
-      } catch (ExecutionException e) {
-        logger.fatal(
-            "Error [Execution]: The execution has been ended with the following error: "
-                + e.getLocalizedMessage(), e);
       }
-    }
+
+      for (TestConf testConf : (List<TestConf>) Configurator.getInstance().getConfigHandler()
+          .getTestList()) {
+        try {
+          if (logger.isInfoEnabled()) {
+            logger.info("Running " + testConf + " ...");
+          }
+
+          List<Future<Object>> listOfResults = new MatrixRunner(testConf,
+              Configurator.getInstance().buildTuples(testConf.getTupleSize()), testConf.getName())
+              .run();
+
+          if (listOfResults != null) {
+            if (logger.isInfoEnabled()) {
+              String testResults = "The following are results for " + testConf + ":\n";
+              for (Future<Object> future : listOfResults) {
+                try {
+                  testResults += "\r\n" + future.get().toString();
+                } catch (Exception e) {
+                  logger.error("Exception while test execution", e);
+                }
+              }
+              testResults += "\r\nEND OF RESULTS\r\n";
+              logger.info(testResults);
+            }
+          } else {
+            logger.warn("No test case was found.");
+          }
+        } catch (InterruptedException e) {
+          logger.fatal("Error [Interruption]: The execution has been interrupted with the "
+              + "following error: " + e.getLocalizedMessage(), e);
+        } catch (ExecutionException e) {
+          logger.fatal(
+              "Error [Execution]: The execution has been ended with the following error: " + e
+                  .getLocalizedMessage(), e);
+        }
+      }
+
+      if (instrumentation != null) {
+        try {
+          instrumentation.runCleanCommand(index++);
+        } catch (Exception e) {
+          logger.warn("Exception while running clean commands", e);
+        }
+      }
+    } while (--iterations > 0);
 
     this.makeDownTheGrid();
 

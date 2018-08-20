@@ -31,6 +31,8 @@ import java.util.List;
 import java.util.Random;
 import java.util.concurrent.*;
 
+import static org.webrtc.kite.apprtc.Utility.alertHandling;
+
 /**
  * IceConnectionTest implementation of KiteTest.
  * <p>
@@ -69,12 +71,17 @@ public class IceConnectionTest extends KiteTest {
     JsonObjectBuilder stats = Json.createObjectBuilder();
     List<JsonObject> browserResults = new ArrayList<>();
     List<String> resultList = new ArrayList<>();
+    String commandName = this.getCommandName();
 
     List<WebDriver> webDriverList = this.getWebDriverList();
 
     Random rand = new Random(System.currentTimeMillis());
     long channel = Math.abs(rand.nextLong());
 
+
+    if (commandName != null) {
+      logger.error("NW Instrumentation command: " + commandName);
+    }
     List<Tester> testerList = new ArrayList<>();
     for (WebDriver webDriver : webDriverList) {
       webDriver.get(APPRTC_URL + channel);
@@ -150,24 +157,7 @@ public class IceConnectionTest extends KiteTest {
       JsonObjectBuilder res = Json.createObjectBuilder();
       res.add("browser", browser);
       boolean everythingOK;
-
-
-      try {
-        Alert alert = webDriver.switchTo().alert();
-        alertMsg = alert.getText();
-        if (alertMsg != null) {
-          alertMsg =
-                  ((RemoteWebDriver) webDriver).getCapabilities().getBrowserName()
-                          + " alert: "
-                          + alertMsg;
-          alert.accept();
-        }
-      } catch (NoAlertPresentException e) {
-        alertMsg = null;
-      } catch (ClassCastException e) {
-        alertMsg = " Cannot retrieve alert message due to alert.getText() class cast problem";
-        webDriver.switchTo().alert().accept();
-      }
+      alertMsg = alertHandling(webDriver);
       webDriver.findElement(By.id("confirm-join-button")).click();
 
       everythingOK = Utility.checkIceConnectionState(webDriver, TIMEOUT, INTERVAL);

@@ -26,6 +26,7 @@ import javax.json.JsonValue;
 import java.util.Arrays;
 import java.util.List;
 
+import static org.webrtc.kite.wpt.Utility.alertHandling;
 import static org.webrtc.kite.wpt.Utility.checkVideoDisplay;
 
 /**
@@ -274,22 +275,7 @@ public class SimulcastTest extends KiteTest {
           new StringBuilder("https://").append(IP).append(":").append(port).append("/").toString();
     }
     webDriver.get(url);
-    try {
-      Alert alert = webDriver.switchTo().alert();
-      //alertMsg = alert.getText();URL
-      if (alertMsg != null) {
-        alertMsg =
-                ((RemoteWebDriver) webDriver).getCapabilities().getBrowserName()
-                        + " alert: "
-                        + alertMsg;
-        alert.accept();
-      }
-    } catch (NoAlertPresentException e) {
-      alertMsg = null;
-    } catch (ClassCastException e) {
-      alertMsg = " Cannot retrieve alert message due to alert.getText() class cast problem";
-      webDriver.switchTo().alert().accept();
-    }
+    alertMsg = alertHandling(webDriver);
   }
 
   @Override

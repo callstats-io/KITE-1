@@ -20,10 +20,13 @@ import org.apache.log4j.Logger;
 import org.webrtc.kite.exception.KiteBadValueException;
 import org.webrtc.kite.exception.KiteNoKeyException;
 
+import javax.json.Json;
 import javax.json.JsonObject;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.io.Writer;
+import javax.json.JsonReader;
+import java.io.*;
+import java.net.URL;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -53,8 +56,7 @@ public class Utility {
    * @param jsonObject JsonObject
    * @param key        key
    * @param valueClass Class object for the value of the key.
-   * @param isOptional A boolean specifying that the value may be optional. Note: This only works
-   *                   if the valueClass is String.
+   * @param isOptional A boolean specifying that the value may be optional. Note: This only works if the valueClass is String.
    * @return the value of the key
    * @throws KiteNoKeyException    if the key is not mapped in the JsonObject.
    * @throws KiteBadValueException if the value of the key is invalid.
@@ -155,7 +157,6 @@ public class Utility {
 
 
   /**
-   *
    * The OS Name without the version, meant for Browser.setPlatform(String platform) (e.g.: Windows, Linux, Mac...).
    * It will return System.getProperty("os.name") if it's not a standard Linux, Windows or Mac OS name.
    *
@@ -163,19 +164,90 @@ public class Utility {
    */
   public static String getPlatform() {
     String osName = System.getProperty("os.name");
-    if(osName.toLowerCase().contains("win")) {
+    if (osName.toLowerCase().contains("win")) {
       return "Windows";
     }
-    if(osName.toLowerCase().contains("mac")) {
+    if (osName.toLowerCase().contains("mac")) {
       return "Mac";
     }
-    if(osName.toLowerCase().contains("nux")) {
+    if (osName.toLowerCase().contains("nux")) {
       return "Linux";
     }
-    if(osName.toLowerCase().contains("nix")) {
+    if (osName.toLowerCase().contains("nix")) {
       return "Unix";
     }
     return osName;
+  }
+
+  /**
+   * Download file.
+   *
+   * @param urlStr   the url str
+   * @param filePath the file path
+   * @throws IOException Signals that an I/O exception has occurred.
+   */
+  public static void downloadFile(String urlStr, String filePath) throws IOException {
+    if (urlStr.contains("~")) {
+      urlStr = urlStr.replaceAll(
+              "~", "/" + System.getProperty("user.home").replaceAll("\\\\", "/"));
+    }
+    logger.info("Downloading '" + filePath + "' from '" + urlStr + "'");
+
+    ReadableByteChannel rbc = null;
+    FileOutputStream fos = null;
+    try {
+      URL url = new URL(urlStr);
+      rbc = Channels.newChannel(url.openStream());
+      fos = new FileOutputStream(filePath);
+      fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
+    } finally {
+      if (fos != null)
+        try {
+          fos.close();
+        } catch (IOException e) {
+          logger.warn(e);
+        }
+      if (rbc != null)
+        try {
+          rbc.close();
+        } catch (IOException e) {
+          logger.warn(e);
+        }
+    }
+  }
+
+  /**
+   * Gets the json object.
+   *
+   * @param filename the filename
+   * @return the json object
+   * @throws FileNotFoundException the file not found exception
+   */
+  public static JsonObject getJsonObject(String filename) throws FileNotFoundException {
+    JsonObject jsonObject;
+
+    File file = new File(filename);
+
+    FileReader fileReader = null;
+    JsonReader jsonReader = null;
+    try {
+      fileReader = new FileReader(file);
+      jsonReader = Json.createReader(fileReader);
+      jsonObject = jsonReader.readObject();
+    } finally {
+      if (fileReader != null) {
+        try {
+          fileReader.close();
+        } catch (IOException e) {
+          logger.warn(e.getMessage(), e);
+        }
+      }
+      if (jsonReader != null) {
+        jsonReader.close();
+      }
+    }
+
+    return jsonObject;
   }
 
 }

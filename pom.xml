@@ -14,11 +14,11 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <kite.java.version>1.8</kite.java.version>
     <kite.version>1.0-SNAPSHOT</kite.version>
-    <kite.selenium.version>3.11.0</kite.selenium.version>
+    <kite.selenium.version>3.13.0</kite.selenium.version>
     <kite.junit.version>4.12</kite.junit.version>
-    <kite.json.version>1.0.4</kite.json.version>
+    <kite.json.version>1.1.2</kite.json.version>
     <kite.log4j.version>1.2.17</kite.log4j.version>
-    <kite.sqlite.jdbc.version>3.21.0.1</kite.sqlite.jdbc.version>
+    <kite.sqlite.jdbc.version>3.23.1</kite.sqlite.jdbc.version>
     <!-- maven plugin versions, shouldn't need be changed very often -->
     <kite.mvn.compiler.version>3.6.1</kite.mvn.compiler.version>
   </properties>

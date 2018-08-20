@@ -21,6 +21,7 @@ import org.apache.commons.logging.LogFactory;
 import org.webrtc.kite.BrowserMapping;
 import org.webrtc.kite.Utility;
 import org.webrtc.kite.pojo.Browser;
+import org.webrtc.kite.pojo.Result;
 
 import javax.json.Json;
 import javax.json.JsonObject;
@@ -80,7 +81,11 @@ public class WPTDao {
   }
 
   public JsonObject getLatestTestResultByBrowser(String tableName ,String browsers) throws SQLException {
-    String resultString = new ResultDao(connection).getLatestResultByBrowser(tableName, browsers);
+    Result result = new ResultDao(connection).getLatestResultByBrowser(tableName, browsers);
+    String resultString = null;
+    if (result != null) {
+      resultString = result.getResult();
+    }
     if (resultString != null) {
       InputStream stream = new ByteArrayInputStream(resultString.getBytes(StandardCharsets.UTF_8));
       try {

@@ -128,8 +128,7 @@ function createPeerConnection(remoteId) {
 async function onCreateOfferSuccess(remoteId, pc, desc) {
   trace('Got offer from peerConn');
   //trace('Offer from peerConn\n' + desc.sdp);
-  keepOnlyOneCodec(desc, codec);
-  trace ('sdp changing here')
+  //keepOnlyOneCodec(desc, codec);
   trace('setLocalDescription start');
   try {
     await pc.setLocalDescription(desc);
@@ -245,8 +244,10 @@ socket.on('webrtc', async function (data) {
     var remoteDesc = srcMsg.desc;
     if (remoteDesc.type == 'offer') {
       peerConn = createPeerConnection(srcId);
-      trace('setRemoteDescription start');
       try {
+        trace('Modifying sdp before setting RemoteDescription');
+        keepOnlyOneCodec(remoteDesc, codec);
+        trace('setRemoteDescription start');
         await peerConn.setRemoteDescription(remoteDesc);
         onSetRemoteSuccess(srcId, peerConn);
         var answer = await peerConn.createAnswer();

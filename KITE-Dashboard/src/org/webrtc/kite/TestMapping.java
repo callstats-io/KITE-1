@@ -30,6 +30,7 @@ public class TestMapping {
   public static Map<String, List> TestMapping = new HashMap<>();
   public static Map<String, String> TestCategoryMapping = new HashMap<>();
   public static Map<String, String> TestDescriptionMapping = new HashMap<>();
+  public static Map<String, String> TestCodeLinkMapping = new HashMap<>();
   private static List<List> testListList = new ArrayList<>();
 
   static {
@@ -153,7 +154,7 @@ public class TestMapping {
 
     List<String> MultipleStreams = new ArrayList<>();
 
-    MultipleStreams.add("MulticastTest");
+    MultipleStreams.add("MultiStreamTest");
 
     List<String> Simulcast = new ArrayList<>();
 
@@ -178,19 +179,20 @@ public class TestMapping {
     List<String> ORTCAPI = new ArrayList<>();
     List<String> H264video = new ArrayList<>();
 
-    H264video.add("H264OnlyTest");
+    H264video.add("H264SDPNegotiationTest");
 
     List<String> VP8video = new ArrayList<>();
 
-    VP8video.add("VP8OnlyTest");
+    //VP8video.add("VP8SDPNegotiationTest");
+    VP8video.add("VP8DecodingTest");
 
     List<String> Solidinteroperability = new ArrayList<>();
 
-    Solidinteroperability.add("ARBitRateTest");
-    Solidinteroperability.add("HDTest");
     Solidinteroperability.add("IceConnectionTest");
-    Solidinteroperability.add("LoopBackTest");
     Solidinteroperability.add("NoAdapterTest");
+/*    Solidinteroperability.add("ARBitRateTest");
+    Solidinteroperability.add("HDTest");
+    Solidinteroperability.add("LoopBackTest");
     Solidinteroperability.add("NoAudioTest");
     Solidinteroperability.add("NoVideoTest");
     Solidinteroperability.add("Opus48kTest");
@@ -200,7 +202,7 @@ public class TestMapping {
     Solidinteroperability.add("ResolutionTest");
     Solidinteroperability.add("SendingVideoCodecTest");
     Solidinteroperability.add("VSBitRateTest");
-    Solidinteroperability.add("VideoFECTest");
+    Solidinteroperability.add("VideoFECTest");*/
 
     List<String> srcObjectinmediaelement = new ArrayList<>();
 
@@ -294,6 +296,18 @@ public class TestMapping {
     TestDescriptionMapping.put("MediaRecorder Integration", "Support for recording video/audio media streams to a local blob rather than sending to a remote peer.");
     TestDescriptionMapping.put("Canvas Integration", "Support for inserting generated or modified video into a MediaStream from a canvas. Important for funny hats (and sharing games, etc).");
     //TestDescriptionMapping.put("Test support", "Support for commandline or javascript flags that use fake devices or files for getUserMedia and allow bypassing user prompts. This allows for automatic testing using services such as travis.ci.");
+
+    TestCodeLinkMapping.put("H264SDPNegotiationTest", "https://github.com/webrtc/KITE/tree/master/kite-test.sever/wpt_server/views/tests/video.codecs");
+    TestCodeLinkMapping.put("VP8SDPNegotiationTest", "https://github.com/webrtc/KITE/tree/master/kite-test.sever/wpt_server/views/tests/video.codecs");
+    TestCodeLinkMapping.put("RebroadcastTest", "https://github.com/webrtc/KITE/tree/master/kite-test.sever/wpt_server/views/tests/rebroadcast");
+    TestCodeLinkMapping.put("CanvasStreamToPcTest", "https://github.com/webrtc/KITE/tree/master/kite-test.sever/wpt_server/views/tests/canvas.stream.to.pc");
+    TestCodeLinkMapping.put("MediaRecorderAPITest", "https://github.com/webrtc/KITE/tree/master/kite-test.sever/wpt_server/views/tests/media.recorder.api");
+    TestCodeLinkMapping.put("WebAudioInputTest", "https://github.com/webrtc/KITE/tree/master/kite-test.sever/wpt_server/views/tests/web.audio.input");
+    TestCodeLinkMapping.put("ScreenSharingTest", "https://github.com/webrtc/KITE/tree/master/kite-test.sever/wpt_server/views/tests/rebroadcast");
+    TestCodeLinkMapping.put("IceConnectionTest", "https://github.com/webrtc/KITE/blob/master/KITE-AppRTC-Test/src/main/java/org/webrtc/kite/apprtc/network/IceConnectionTest.java");
+    TestCodeLinkMapping.put("MultiStreamTest", "https://github.com/webrtc/KITE/tree/master/kite-test.sever/wpt_server/views/tests/multi.stream");
+    TestCodeLinkMapping.put("NoAdapterTest", "https://github.com/webrtc/KITE/tree/master/kite-test.sever/wpt_server/views/tests/no.adapter");
+    TestCodeLinkMapping.put("SimulcastTest", "https://github.com/webrtc/KITE/tree/master/kite-test.sever/simulcast");
   }
 
 }
