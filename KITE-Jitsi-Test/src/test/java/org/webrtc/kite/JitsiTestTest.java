@@ -39,7 +39,6 @@ public class JitsiTestTest extends TestCase {
     browser2.setRemoteAddress(SELENIUM_SERVER_URL);
 
     webDriverList.add(WebDriverFactory.createWebDriver(browser1, TEST_NAME));
-    webDriverList.add(WebDriverFactory.createWebDriver(browser1, TEST_NAME));
     webDriverList.add(WebDriverFactory.createWebDriver(browser2, TEST_NAME));
   }
 
@@ -56,7 +55,6 @@ public class JitsiTestTest extends TestCase {
   public void testTestScript() throws Exception {
     KiteTest test = new JitsiTest();
     test.setWebDriverList(this.webDriverList);
-    System.out.println("Skipping Jitsi Test Unit Test. Uncomment line 60 in JitsiTestTest.java to enable this unit test.");
-    //System.out.println(test.testScript());
+    System.out.println(test.testScript());
   }
 }

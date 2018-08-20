@@ -1,0 +1,34 @@
+{
+  "type": 1,
+  "name": "interop.jitsi.config.json",
+  "instrumentUrl": "file:///<path-to-KITE-folder>/KITE-Jitsi-Test/configs/instrumentation.json",
+  "remotes": [
+    {
+      "type": "local",
+      "remoteAddress": "http://1.2.3.4:4444/wd/hub"
+    }
+  ],
+  "tests": [
+    {
+      "name": "JitsiTest",
+      "tupleSize": 3,
+      "description":"This test verifies the ICEConnection state of the browsers participating in a conference room of meet.jit.si, as well as the number of people in the room",
+      "testImpl": "org.webrtc.kite.JitsiTest"
+    }
+  ],
+  "browsers": [
+    {
+      "browserName": "chrome",
+      "version": "67",
+      "platform": "LINUX",
+      "fakeMediaFile": "/home/ubuntu/e-dv548_lwe08_christa_casebeer_003.y4m",
+      "fakeMediaAudio": "/home/ubuntu/e-dv548_lwe08_christa_casebeer_003.wav",
+      "headless": true
+    },
+    {
+      "browserName": "firefox",
+      "version": "61",
+      "platform": "LINUX"
+    }
+  ]
+}

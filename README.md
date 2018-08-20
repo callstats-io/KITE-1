@@ -238,3 +238,27 @@ Complete the fields username and accesskey appropriately.
 
 * Don't forget to modify the example browsers, versions and platforms to suit your needs.
 
+
+# III. Network Instrumentation
+
+See KITE-Jitsi-Test as a sample test implementing Network Instrumentation.
+
+Edit the following two config files:
+```
+KITE-Jitsi-Test\config\instrumentation.json
+KITE-Jitsi-Test\config\interop.jitsi.config.json
+```
+1) In `instrumentation.json` set the public IP addresses of the gateway(s), the path to the AWS key (.pem file) and edit the scenarios as needed.
+2) In `interop.jitsi.config.json` set the public IP addresses of the Hub, the path to the instrumentation.json file.
+
+
+Compile
+```
+mvn -DskipTests clean install
+```
+
+Run
+```
+java -cp KITE-Engine/target/kite-jar-with-dependencies.jar;KITE-Jitsi-Test/target/jitsi-test-1.0-SNAPSHOT-jar-with-dependencies.jar org.webrtc.kite.Engine KITE-Jitsi-Test/configs/interop.jitsi.config.json
+```
+
