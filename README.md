@@ -259,6 +259,6 @@ mvn -DskipTests clean install
 
 Run
 ```
-java -cp KITE-Engine/target/kite-jar-with-dependencies.jar;KITE-Jitsi-Test/target/jitsi-test-1.0-SNAPSHOT-jar-with-dependencies.jar org.webrtc.kite.Engine KITE-Jitsi-Test/configs/interop.jitsi.config.json
+java -cp KITE-Engine/target/kite-jar-with-dependencies.jar;KITE-Jitsi-Test/target/jitsi-test-1.0-SNAPSHOT.jar org.webrtc.kite.Engine KITE-Jitsi-Test/configs/interop.jitsi.config.json
 ```
 
