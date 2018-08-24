@@ -20,10 +20,10 @@
   ],
   "tests": [
     {
-      "name": "IceConnectionTest",
+      "name": "StatsVerifyTest",
       "tupleSize": 2,
-      "description": "This test check the ICEConnection state between two browsers communicating via appr.tc",
-      "testImpl": "org.webrtc.kite.IceConnectionTest"
+      "description": "This test collect browser stats for csio getStats verify application",
+      "testImpl": "org.webrtc.kite.StatsVerifyTest"
     }
   ],
   "browsers": [

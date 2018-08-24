@@ -24,26 +24,23 @@ import org.webrtc.kite.stat.Utility;
 import java.util.*;
 
 /**
- * Callstats.io Twilio audio only SHIM test of KiteTest.
+ * Callstats.io Stats verify test of KiteTest.
  * <p>
  * The testScript() implementation does the following in sequential manner on the provided array of
  * WebDriver:
  * <ul>
- * <li>1) Opens all the browsers with the url specified in CSIO_TWILIO_AUDIO_ONLY_DEMO_URL.</li>
- * <li>2) Join Twilio audio only call with a namespace, and clicks 'call button' .</li>
- * <li>3) Do the following every 1 second for 1 minute: </li>
+ * <li>1) Opens all the browsers with the url specified in APPRTC_URL.</li>
+ * <li>2) Clicks 'confirm-join-button'.</li>
+ * <li>3) Do the following every 1 second for 1 minute:</li>
  * <ul>
  * <li>a) Executes the JavaScript on all browsers given via testJavaScript() which returns
- * callstats.io stats callback result</li>
- * <li>b) Checks whether all the browsers have returned either
- * "connectionState":, // one of: online, offline
- * "fabricState":, // one of: initialising, established, disrupted.
- * also may be streams if necessary
- * </li>
+ * iceConnectionState.</li>
+ * <li>b) Checks whether all the browsers have returned either 'completed' or 'connected'.</li>
  * </ul>
- * <li>4) The test is considered as successful if all the browsers either returns
- * connectionState : 'online', and fabricState : 'established'
- * <li>5) A successful test returns a boolean 'true' while the unsuccessful test returns a boolean
+ * <li>4) The test is considered as successful if all the browsers either returns 'completed' or
+ * 'connected' within 1 minute.</li>
+ * <li>5) Collect browser stats using getStats API .</li>
+ * <li>6) A successful test returns a boolean 'true' while the unsuccessful test returns a boolean
  * 'false'.</li>
  * </ul>
  * </p>
@@ -81,6 +78,7 @@ public class StatsVerifyTest extends KiteTest {
     }
 
     /**
+     * Returns JavaScript to collect browser stats using getStats() API
      * @return the JavaScript as string.
      */
     private final static String stashStatsScript() {
@@ -129,20 +127,22 @@ public class StatsVerifyTest extends KiteTest {
     }
 
     /**
+     * Return browser stats
+     *
      * @return the JavaScript as string.
      */
     private final static String getStatsScript() {
-//        return "return window.KITEStats;";
         return "return window.KITEStatsDiff;";
 
     }
 
     /**
      * Opens the APPRTC_URL and clicks 'confirm-join-button'.
+     * It will cover three different test scenario
+     * audio only 01
+     * video only 10
+     * audio, video 11
      */
-    // audio only = 01
-    // video only = 10
-    // audio + video = 11
     private void takeAction(int testType) {
         Random rand = new Random(System.currentTimeMillis());
         long channel = Math.abs(rand.nextLong());

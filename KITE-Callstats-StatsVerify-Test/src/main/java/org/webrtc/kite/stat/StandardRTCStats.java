@@ -6,6 +6,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * Standard stats take from
+ * https://www.w3.org/TR/webrtc-stats/
+ */
 public class StandardRTCStats {
     public StandardRTCStats() {
     }
