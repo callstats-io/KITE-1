@@ -35,6 +35,7 @@
     <module>KITE-Dashboard</module>
     <module>KITE-Multi-Simul-cast-Test</module>
     <module>KITE-Scorecard</module>
+    <module>KITE-Callstats-StatsVerify-Test</module>
   </modules>
 
 </project>

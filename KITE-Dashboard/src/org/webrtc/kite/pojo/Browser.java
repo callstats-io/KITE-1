@@ -47,6 +47,21 @@ public class Browser {
   }
 
   /**
+   * Constructs a new Browser from given information as name, version and platform.
+   *
+   * @param id       id of browser.
+   * @param name     name of browser.
+   * @param version  version of browser.
+   * @param platform platform on which the browser runs.
+   */
+  public Browser(int id, String name, String version, String platform) {
+    this.id = id;
+    this.name = name;
+    this.version = processVersion(version);
+    this.platform = processPlatform(platform);
+  }
+
+  /**
    * Constructs a new Browser from a Json object containing all the needed information
    * and 'translate' to appropriate name of platform.
    *

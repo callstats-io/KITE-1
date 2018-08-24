@@ -1,0 +1,25 @@
+{
+  "name": "local selenium example",
+  "callback": "http://localhost:8080/datacenter",
+  "remotes": [
+    {
+      "type": "local",
+      "remoteAddress": "http://localhost:4444/wd/hub"
+    }
+  ],
+  "tests": [
+    {
+      "name": "StatsVerifyTest",
+      "tupleSize": 2,
+      "description": "This test check the WebRTC getstats diff between two browsers communicating via appr.tc",
+      "testImpl": "org.webrtc.kite.StatsVerifyTest"
+    }
+  ],
+  "browsers": [
+    {
+      "browserName": "chrome",
+      "version": "68.0.3440.106",
+      "platform": "MAC"
+    }
+]
+}
