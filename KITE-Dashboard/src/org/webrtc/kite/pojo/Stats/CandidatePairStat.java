@@ -27,13 +27,10 @@ public class CandidatePairStat {
           }
         }
       }
-      if (this.candidate_pair_list != null)
-        this.numberOfPairs = this.candidate_pair_list.size();
-      else
-        this.numberOfPairs = 0;
+      if (this.candidate_pair_list != null) this.numberOfPairs = this.candidate_pair_list.size();
+      else this.numberOfPairs = 0;
     }
   }
-
 
   public String getJsonData() {
     String jsonData = "\"candidates\":{";
@@ -44,22 +41,23 @@ public class CandidatePairStat {
       for (int i = 0; i < this.numberOfPairs; i++) {
         JsonObject candidate_pair = this.candidate_pair_obj_list.get(i);
         jsonData += "{";
-        jsonData += "\"transportId\":" + "\"" + candidate_pair.getString("transportId", "n/a") + "\",";
+        jsonData +=
+            "\"transportId\":" + "\"" + candidate_pair.getString("transportId", "n/a") + "\",";
         String localID = candidate_pair.getString("localCandidateId", "n/a");
-                /*if (localID.startsWith("RTCIceCandidate"))
-                    localID = localID.split("RTCIceCandidate_")[1];*/
+        /*if (localID.startsWith("RTCIceCandidate"))
+        localID = localID.split("RTCIceCandidate_")[1];*/
         jsonData += "\"localCandidateId\":" + "\"" + localID + "\",";
         String remoteID = candidate_pair.getString("remoteCandidateId", "n/a");
-                /*if (remoteID.startsWith("RTCIceCandidate"))
-                    remoteID = remoteID.split("RTCIceCandidate_")[1];*/
+        /*if (remoteID.startsWith("RTCIceCandidate"))
+        remoteID = remoteID.split("RTCIceCandidate_")[1];*/
         jsonData += "\"remoteCandidateId\":" + "\"" + remoteID + "\",";
         jsonData += "\"state\":" + "\"" + candidate_pair.getString("state", "n/a") + "\",";
         jsonData += "\"priority\":" + "\"" + candidate_pair.getString("priority", "n/a") + "\",";
         jsonData += "\"nominated\":" + "\"" + candidate_pair.getString("nominated", "n/a") + "\",";
         jsonData += "\"bytesSent\":" + "\"" + candidate_pair.getString("bytesSent", "n/a") + "\",";
-        jsonData += "\"bytesReceived\":" + "\"" + candidate_pair.getString("bytesReceived", "n/a") + "\"}";
-        if (i < this.numberOfPairs - 1)
-          jsonData += ",";
+        jsonData +=
+            "\"bytesReceived\":" + "\"" + candidate_pair.getString("bytesReceived", "n/a") + "\"}";
+        if (i < this.numberOfPairs - 1) jsonData += ",";
       }
     }
     jsonData += "]";

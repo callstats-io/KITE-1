@@ -19,6 +19,7 @@ package org.webrtc.kite;
 import org.openqa.selenium.Capabilities;
 import org.openqa.selenium.MutableCapabilities;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebDriverException;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.edge.EdgeOptions;
 import org.openqa.selenium.firefox.FirefoxOptions;
@@ -26,7 +27,6 @@ import org.openqa.selenium.firefox.FirefoxProfile;
 import org.openqa.selenium.logging.LogType;
 import org.openqa.selenium.logging.LoggingPreferences;
 import org.openqa.selenium.remote.CapabilityType;
-import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
 import org.openqa.selenium.safari.SafariOptions;
 import org.webrtc.kite.config.Browser;
@@ -53,7 +53,7 @@ public class WebDriverFactory {
    *                               or an unknown protocol is found, or spec is null.
    */
   public static WebDriver createWebDriver(Browser browser, String testName, String id)
-      throws MalformedURLException {
+      throws MalformedURLException, WebDriverException {
     return new RemoteWebDriver(new URL(browser.getRemoteAddress()),
         WebDriverFactory.createCapabilities(browser, testName, id));
   }
@@ -91,19 +91,39 @@ public class WebDriverFactory {
       capabilities.setCapability(CapabilityType.PLATFORM_NAME, browser.getPlatform());
     }
     // Remote test identifier
-    capabilities.setCapability("name", testName);
-    capabilities.setCapability("id", id);
+    if (testName != null) {
+      capabilities.setCapability("name", testName);
+    }
+    if (id != null) {
+      capabilities.setCapability("id", id);
+    }
 
     switch (browser.getBrowserName()) {
       case "chrome":
         ChromeOptions chromeOptions = new ChromeOptions();
         chromeOptions.addArguments("use-fake-ui-for-media-stream");
         chromeOptions.addArguments("use-fake-device-for-media-stream");
+        String extension = System.getProperty("kite.chrome.extension");
+        if (extension!=null) {
+          chromeOptions.addExtensions(new File(extension));
+        }
+        if (browser.getFakeMediaFile() != null) {
+          chromeOptions.addArguments("allow-file-access-from-files");
+          chromeOptions
+              .addArguments("use-file-for-fake-video-capture=" + browser.getFakeMediaFile() + "");
+        }
         if (browser.isHeadless()) {
           chromeOptions.addArguments("headless");
+          // chromeOptions.addArguments("window-size=1980,960");
+          // chromeOptions.addArguments("screenshot");
+        }
+        for (String flag : browser.getFlags()) {
+          chromeOptions.addArguments(flag);
         }
         /*
-         * chromeOptions.addArguments("no-sandbox"); chromeOptions.addArguments("disable-infobars");
+         * chromeOptions.addArguments("--disable-gpu");
+         * chromeOptions.addArguments("no-sandbox");
+         * chromeOptions.addArguments("disable-infobars");
          * chromeOptions.addArguments("test-type=browser");
          * chromeOptions.addArguments("disable-extensions");
          * chromeOptions.addArguments("--js-flags=--expose-gc");
@@ -137,6 +157,9 @@ public class WebDriverFactory {
         firefoxOptions.setProfile(firefoxProfile);
         if (browser.isHeadless()) {
           firefoxOptions.addArguments("-headless");
+        }
+        for (String flag : browser.getFlags()) {
+          firefoxOptions.addArguments(flag);
         }
         capabilities.merge(firefoxOptions);
         //  capabilities.setCapability(FirefoxOptions.FIREFOX_OPTIONS, firefoxProfile);

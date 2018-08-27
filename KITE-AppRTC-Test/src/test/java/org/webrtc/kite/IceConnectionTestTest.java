@@ -18,7 +18,7 @@ package org.webrtc.kite;
 
 import junit.framework.TestCase;
 import org.openqa.selenium.WebDriver;
-import org.webrtc.kite.BitRateTest.ARBitRateTest;
+import org.webrtc.kite.apprtc.network.IceConnectionTest;
 import org.webrtc.kite.config.Browser;
 
 import java.util.ArrayList;

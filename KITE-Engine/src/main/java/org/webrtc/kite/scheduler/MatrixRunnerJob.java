@@ -16,16 +16,16 @@
 
 package org.webrtc.kite.scheduler;
 
-import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-
 import org.apache.log4j.Logger;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.webrtc.kite.MatrixRunner;
 import org.webrtc.kite.config.Configurator;
 import org.webrtc.kite.config.TestConf;
+
+import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 /**
  * A Quartz job incapsulating Matrix Runner.

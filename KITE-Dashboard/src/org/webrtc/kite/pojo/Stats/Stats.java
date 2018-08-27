@@ -15,13 +15,13 @@ public class Stats {
     JsonArray statArray = null;
     JsonObject sdpObject = null;
 
-    //this.browser = browser.substring(2, browser.length());
+    // this.browser = browser.substring(2, browser.length());
     this.browser = browser;
-    if (browser.endsWith("1"))
+    if (browser.endsWith("1") || browser.startsWith("1")) {
       this.caller = true;
-    else
+    } else {
       this.caller = false;
-
+    }
     if (browserJsonObject.get("sdp") != null) {
       sdpObject = browserJsonObject.getJsonObject("sdp");
     }
@@ -30,7 +30,6 @@ public class Stats {
     if (browserJsonObject.get("stats") != null) {
       statArray = browserJsonObject.getJsonArray("stats");
     }
-
 
     this.video = new MediaStat(statArray, "video");
     this.audio = new MediaStat(statArray, "audio");

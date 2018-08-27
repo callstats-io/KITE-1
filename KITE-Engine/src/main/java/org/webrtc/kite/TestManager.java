@@ -112,8 +112,9 @@ public class TestManager implements Callable<Object> {
    */
   private void populateDrivers(String testName) throws MalformedURLException {
     this.webDriverList = new ArrayList<WebDriver>();
-    for (Browser browser : this.browserList)
+    for (Browser browser : this.browserList){
       this.webDriverList.add(WebDriverUtility.getWebDriverForBrowser(testName, browser));
+    }
   }
 
   /**
@@ -122,12 +123,13 @@ public class TestManager implements Callable<Object> {
    */
   private void populateInfoFromNavigator() {
     int tupleSize = this.testConf.getTupleSize();
-    if (tupleSize != this.webDriverList.size())
+    if (tupleSize != this.webDriverList.size()) {
       return;
-
-    for (int i = 0; i < tupleSize; i++)
+    }
+    for (int i = 0; i < tupleSize; i++) {
       WebDriverUtility
           .populateInfoFromNavigator(this.webDriverList.get(i), this.browserList.get(i));
+    }
   }
 
   /**
@@ -206,9 +208,9 @@ public class TestManager implements Callable<Object> {
             .add("result", this.getResult(payload));
 
     JsonObjectBuilder meta = this.getMeta(true);
-    if (meta != null)
+    if (meta != null) {
       jsonObjectBuilder.add("meta", meta);
-
+    }
     return jsonObjectBuilder.build();
 
   }
@@ -222,10 +224,11 @@ public class TestManager implements Callable<Object> {
   private JsonObjectBuilder getResult(Object payload) {
     JsonObjectBuilder jsonObjectBuilder =
         Json.createObjectBuilder().add("timeTaken", this.timeTaken);
-    if (payload instanceof JsonObjectBuilder)
+    if (payload instanceof JsonObjectBuilder) {
       jsonObjectBuilder.add("payload", (JsonObjectBuilder) payload);
-    else
+    } else {
       jsonObjectBuilder.add("payload", (String) payload);
+    }
     return jsonObjectBuilder;
   }
 
@@ -241,17 +244,20 @@ public class TestManager implements Callable<Object> {
     JsonObjectBuilder jsonObjectBuilder = null;
 
     if (this.isFirstTest()) {
-      if (jsonObjectBuilder == null)
+      if (jsonObjectBuilder == null) {
         jsonObjectBuilder = Json.createObjectBuilder();
+      }
       jsonObjectBuilder.add("totalTests", this.totalTests);
-      if (withBrowserList)
+      if (withBrowserList) {
         jsonObjectBuilder.add("browsers", Configurator.getInstance().getBrowserListJsonArray())
             .add("description", this.testConf.getDescription());
+      }
     }
 
     if (this.isLastTest) {
-      if (jsonObjectBuilder == null)
+      if (jsonObjectBuilder == null) {
         jsonObjectBuilder = Json.createObjectBuilder();
+      }
       jsonObjectBuilder.add("lastTest", this.isLastTest);
     }
 
@@ -320,10 +326,11 @@ public class TestManager implements Callable<Object> {
             new CallbackThread(this.testConf.getCallbackURL(), jsonObject);
         // if no "meta", post result in other thread; if "meta", post result in same thread
         // "meta" is included for the first and last tests, that are executed synchronously
-        if (jsonObject.getString("meta", null) == null)
+        if (jsonObject.getString("meta", null) == null) {
           callbackThread.start();
-        else
+        } else {
           callbackThread.postResult();
+        }
       }
 
     return jsonObject;

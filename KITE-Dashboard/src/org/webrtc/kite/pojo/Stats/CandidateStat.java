@@ -11,8 +11,7 @@ public class CandidateStat {
   private String candidateType;
   private int numberOfCandidates;
   private List<JsonObject> candidate_obj_list = new ArrayList<>();
-  private List<String> candidate_name_list = new ArrayList<>();
-  ;
+  private List<String> candidate_name_list = new ArrayList<>();;
 
   public CandidateStat(JsonArray statArray, String candidateType) {
     this.candidateType = candidateType + "-candidate";
@@ -51,12 +50,12 @@ public class CandidateStat {
         jsonData += "\"ip\":" + "\"" + candidate.getString("ip", "n/a") + "\",";
         jsonData += "\"port\":" + "\"" + candidate.getString("port", "n/a") + "\",";
         jsonData += "\"protocol\":" + "\"" + candidate.getString("protocol", "n/a") + "\",";
-        jsonData += "\"candidateType\":" + "\"" + candidate.getString("candidateType", "n/a") + "\",";
+        jsonData +=
+            "\"candidateType\":" + "\"" + candidate.getString("candidateType", "n/a") + "\",";
         jsonData += "\"priority\":" + "\"" + candidate.getString("priority", "n/a") + "\",";
         jsonData += "\"url\":" + "\"" + candidate.getString("url", "n/a") + "\"";
         jsonData += "}";
-        if (i < this.numberOfCandidates - 1)
-          jsonData += ",";
+        if (i < this.numberOfCandidates - 1) jsonData += ",";
       }
     }
     jsonData += "}";
