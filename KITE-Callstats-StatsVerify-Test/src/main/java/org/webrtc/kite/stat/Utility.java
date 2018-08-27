@@ -109,17 +109,22 @@ public class Utility {
         JsonObjectBuilder tmp = Json.createObjectBuilder();
         for (int i = 1; i <= tupleSize; i++) {
             String name = "client_" + i;
-            if (audioVideoBoth.get(name) != null && audioOnly.get(name) != null)
-                tmp.add(name, Utility.buildClientObject(audioVideoBoth.get(name), audioOnly.get(name), videoOnly.get(name)));
+            String browser = "browser_" + i;
+            if (audioVideoBoth.get(browser) != null && audioOnly.get(browser) != null) {
+                tmp.add(browser, audioVideoBoth.get(browser).toString());
+            }
+            if (audioVideoBoth.get(name) != null && audioOnly.get(name) != null) {
+                tmp.add(
+                    name,
+                    Utility.buildClientObject(
+                        audioVideoBoth.get(name), audioOnly.get(name), videoOnly.get(name)));
+                        }
         }
 
         return Json.createObjectBuilder()
                 .add("result", (String) audioVideoBoth.get("result"))
                 .add("stats", tmp).build();
     }
-
-
-
 
     /**
      * Saves a JSON object into a file, with line breaks and indents.

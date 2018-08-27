@@ -222,6 +222,12 @@ public class StatsVerifyTest extends KiteTest {
         ((JavascriptExecutor) webDriver).executeScript(this.stashStatsScript());
         Thread.sleep(INTERVAL);
         Object stats = ((JavascriptExecutor) webDriver).executeScript(this.getStatsScript());
+        String browser = ((RemoteWebDriver)webDriver).getCapabilities().getBrowserName();
+
+        //comment out the following line to remove browser from the JSON object.
+        resultMap.put("browser_" + count, browser + "_" + count);
+
+
         resultMap.put("client_" + count, stats);
         count += 1;
       }
