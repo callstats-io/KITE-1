@@ -16,9 +16,13 @@
 
 package org.webrtc.kite.stat;
 
-import javax.json.Json;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
+import javax.json.*;
+import javax.json.stream.JsonGenerator;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.PrintWriter;
+import java.io.StringReader;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
@@ -113,5 +117,43 @@ public class Utility {
                 .add("result", (String) audioVideoBoth.get("result"))
                 .add("stats", tmp).build();
     }
+
+
+
+
+    /**
+     * Saves a JSON object into a file, with line breaks and indents.
+     *
+     * @param testName the name of the test, which will be inlcuded in the file name
+     * @param jsonStr the json object as a String.
+     * @param path the file path where to save the file.
+     */
+    public static void printJsonTofile(String testName, String jsonStr, String path) {
+        try {
+            Map<String, Object> properties = new LinkedHashMap<>(1);
+            properties.put(JsonGenerator.PRETTY_PRINTING, true);
+            String jsonFilename =
+                    testName.replace(" ", "")
+                            + "_"
+                            + new SimpleDateFormat("yyyyMMdd_hhmmss").format(new Date())
+                            + ".json";
+            File dir = new File(path);
+            if (!dir.isDirectory()) {
+                dir.mkdirs();
+            }
+            FileOutputStream fo = new FileOutputStream(path + jsonFilename);
+            PrintWriter pw = new PrintWriter(fo, true);
+            JsonWriterFactory writerFactory = Json.createWriterFactory(properties);
+            JsonWriter jsonWriter = writerFactory.createWriter(pw);
+            JsonObject obj = Json.createReader(new StringReader(jsonStr)).readObject();
+            jsonWriter.writeObject(obj);
+            jsonWriter.close();
+            pw.close();
+            fo.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
 
 }
