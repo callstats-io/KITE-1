@@ -3,7 +3,7 @@ package org.webrtc.kite.dao;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.webrtc.kite.Mapping;
+import org.webrtc.kite.BrowserMapping;
 import org.webrtc.kite.Utility;
 import org.webrtc.kite.pojo.Browser;
 import org.webrtc.kite.pojo.RTCStatsDiff;
@@ -61,7 +61,7 @@ public class RTCStatsDao {
                 String name = rs.getString("NAME");
                 String version = rs.getString("VERSION");
                 String platform = rs.getString("PLATFORM");
-                if (!Mapping.IrrelevantList.contains(version) && !Mapping.IrrelevantList.contains(platform))
+                if (!BrowserMapping.IrrelevantList.contains(version) && !BrowserMapping.IrrelevantList.contains(platform))
                     listOfBrowsers.add(new Browser(id, name, version, platform));
             }
 
