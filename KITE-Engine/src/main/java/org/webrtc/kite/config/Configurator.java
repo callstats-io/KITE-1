@@ -16,11 +16,10 @@
 
 package org.webrtc.kite.config;
 
-import java.lang.reflect.InvocationTargetException;
-
 import org.apache.log4j.Logger;
 import org.quartz.Job;
 import org.webrtc.kite.Utility;
+import org.webrtc.kite.exception.KiteGridException;
 import org.webrtc.kite.exception.KiteInsufficientValueException;
 import org.webrtc.kite.exception.KiteUnsupportedIntervalException;
 import org.webrtc.kite.exception.KiteUnsupportedRemoteException;
@@ -31,6 +30,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashSet;
@@ -128,8 +128,6 @@ public class Configurator {
     return configHandler.getJobClass();
   }
 
-  ;
-
   /**
    * Builds itself based on the content of the config file.
    *
@@ -143,10 +141,12 @@ public class Configurator {
    * @throws InstantiationException           the instantiation exception
    * @throws KiteUnsupportedRemoteException   if an unsupported remote is found in 'remotes'.
    * @throws InvocationTargetException        the invocation target exception
+   * @throws KiteGridException                the kite grid exception
    */
   public void buildConfig(File file) throws FileNotFoundException, KiteUnsupportedIntervalException,
       KiteInsufficientValueException, NoSuchMethodException, IllegalAccessException,
-      InstantiationException, KiteUnsupportedRemoteException, InvocationTargetException {
+      InstantiationException, KiteUnsupportedRemoteException, InvocationTargetException,
+      KiteGridException {
 
     FileReader fileReader = null;
     JsonReader jsonReader = null;
@@ -156,14 +156,16 @@ public class Configurator {
       jsonReader = Json.createReader(fileReader);
       jsonObject = jsonReader.readObject();
     } finally {
-      if (fileReader != null)
+      if (fileReader != null) {
         try {
           fileReader.close();
         } catch (IOException e) {
           logger.warn(e.getMessage(), e);
         }
-      if (jsonReader != null)
+      }
+      if (jsonReader != null) {
         jsonReader.close();
+      }
     }
 
     this.type = jsonObject.getInt("type", 1);
@@ -184,22 +186,23 @@ public class Configurator {
     List<JsonObject> browserObjectList = (List<JsonObject>) Utility
         .throwNoKeyOrBadValueException(jsonObject, "browsers", JsonArray.class, false);
     int size = browserObjectList.size();
-    if (size < 1)
+    if (size < 1) {
       throw new KiteInsufficientValueException("Browser objects are less than one.");
+    }
     browserObjectList = new ArrayList<JsonObject>(new LinkedHashSet<JsonObject>(browserObjectList));
-    if (browserObjectList.size() != size)
+    if (browserObjectList.size() != size) {
       logger.warn("Duplicate browser configurations in the config file have been removed.");
-
+    }
     List<JsonObject> remoteObjectList = null;
     Object object = Utility
         .throwNoKeyOrBadValueException(jsonObject, "remotes", JsonArray.class, this.type == 2);
-    if (object != null)
+    if (object != null) {
       remoteObjectList = (List<JsonObject>) object;
-
-    if ((remoteObjectList == null || remoteObjectList.size() < 1))
+    }
+    if ((remoteObjectList == null || remoteObjectList.size() < 1)) {
       throw new KiteInsufficientValueException("Either remotes are missing or are less than one.");
-
-    configHandler =
+    }
+    this.configHandler =
         new ConfigTypeOneHandler(callbackURL, remoteObjectList, testObjectList, browserObjectList);
 
     logger.info("Finished reading the configuration file");
@@ -213,6 +216,14 @@ public class Configurator {
    */
   public List<List<Browser>> buildTuples(int tupleSize) {
 
+    List<Browser> focusedList = new ArrayList<>();
+    List<Browser> browserList = (List<Browser>) this.configHandler.getBrowserList();
+    for (Browser browser: browserList){
+      if (browser.isFocus()){
+        focusedList.add(browser);
+      }
+    }
+
     List<List<Browser>> listOfTuples = new ArrayList<List<Browser>>();
 
     double totalTuples = Math.pow(this.configHandler.getBrowserList().size(), tupleSize);
@@ -225,13 +236,23 @@ public class Configurator {
     for (int i = 0; i < tupleSize; i++) {
       double marge = totalTuples / Math.pow(this.configHandler.getBrowserList().size(), i + 1);
       double rep = Math.pow(this.configHandler.getBrowserList().size(), i);
-      for (int x = 0; x < rep; x++)
-        for (int j = 0; j < this.configHandler.getBrowserList().size(); j++)
-          for (int k = 0; k < marge; k++)
+      for (int x = 0; x < rep; x++) {
+        for (int j = 0; j < this.configHandler.getBrowserList().size(); j++) {
+          for (int k = 0; k < marge; k++) {
             (listOfTuples.get((int) (x * totalTuples / rep + j * marge + k)))
                 .add(i, new Browser(this.configHandler.getBrowserList().get(j)));
+          }
+        }
+      }
     }
-
+    
+    List<List<Browser>> tempListOfTuples = new ArrayList<>(listOfTuples);
+    for (List<Browser> tuple: tempListOfTuples){
+      if (Collections.disjoint(tuple,focusedList)){
+        listOfTuples.remove(tuple);
+      }
+    }
+    
     Collections.shuffle(listOfTuples);
     return listOfTuples;
   }

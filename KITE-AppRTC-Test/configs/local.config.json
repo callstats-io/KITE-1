@@ -19,17 +19,20 @@
     {
       "browserName": "chrome",
       "version": "57.0",
-      "platform": "MAC"
+      "platform": "MAC",
+      "flags": []
     },
     {
       "browserName": "firefox",
       "version": "45.0",
-      "platform": "LINUX"
+      "platform": "LINUX",
+      "flags": []
     },
     {
       "browserName": "MicrosoftEdge",
       "version": "14.0",
-      "platform": "WINDOWS"
+      "platform": "WINDOWS",
+      "flags": []
     }
   ]
 }

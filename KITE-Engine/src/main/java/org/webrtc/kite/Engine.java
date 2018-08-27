@@ -39,14 +39,15 @@ import static org.quartz.TriggerBuilder.newTrigger;
  */
 public class Engine {
 
-  private static final Logger logger = Logger.getLogger(Engine.class.getName());
-
   private static final String IDENTITY_GROUP = "KITE";
 
   static {
     SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HHmmss");
     System.setProperty("current.date", dateFormat.format(new Date()));
   }
+
+  //Logger must be called after setting the system property "current.data"
+  private static final Logger logger = Logger.getLogger(Engine.class.getName());
 
   /**
    * main method
@@ -93,8 +94,7 @@ public class Engine {
 
     } catch (FileNotFoundException e) {
       logger
-          .fatal("Error [File Not Found]: '" + args[0]
-                  + "' either doesn't exist or is not a file.",
+          .fatal("Error [File Not Found]: '" + args[0] + "' either doesn't exist or is not a file.",
               e);
     } catch (JsonException | IllegalStateException e) {
       logger.fatal("Error [Config Parsing]: Unable to parse the provided configuration "
@@ -107,15 +107,13 @@ public class Engine {
           + "' has an inappropriate value in the configuration file.", e);
     } catch (KiteUnsupportedIntervalException e) {
       logger.fatal(
-          "Error [Unrecognized interval]: '" + e.getIntervalName()
-              + "' is unrecognized to KITE.",
+          "Error [Unrecognized interval]: '" + e.getIntervalName() + "' is unrecognized to KITE.",
           e);
     } catch (KiteInsufficientValueException e) {
       logger.fatal("Error [Config Parsing]: " + e.getLocalizedMessage(), e);
     } catch (KiteUnsupportedRemoteException e) {
       logger.fatal(
-          "Error [Unrecognized remote]: '" + e.getRemoteName()
-              + "' is unrecognized to KITE.", e);
+          "Error [Unrecognized remote]: '" + e.getRemoteName() + "' is unrecognized to KITE.", e);
     } catch (Exception e) {
       logger.fatal("FATAL Error: KITE has failed to start execution", e);
       try {

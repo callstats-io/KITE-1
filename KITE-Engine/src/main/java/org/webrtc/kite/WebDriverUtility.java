@@ -96,6 +96,7 @@ public class WebDriverUtility {
     for (WebDriver webDriver : webDriverList)
       try {
         // Open about:config in case of fennec (Firefox for Android) and close.
+        logger.info("closeDrivers: closing down " + webDriverList.size() + " webDrivers");
         if (((RemoteWebDriver) webDriver).getCapabilities().getBrowserName()
             .equalsIgnoreCase("fennec")) {
           webDriver.get("about:config");

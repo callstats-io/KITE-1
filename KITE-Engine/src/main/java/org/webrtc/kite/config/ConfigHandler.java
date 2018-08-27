@@ -16,17 +16,17 @@
 
 package org.webrtc.kite.config;
 
+import org.quartz.Job;
+import org.webrtc.kite.grid.RemoteAddressManager;
+import org.webrtc.kite.grid.RemoteGridFetcher;
+
+import javax.json.JsonObject;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-import javax.json.JsonObject;
-
-import org.quartz.Job;
-import org.webrtc.kite.grid.RemoteAddressManager;
-import org.webrtc.kite.grid.RemoteGridFetcher;
 
 /**
  * The type Config handler.

@@ -21,14 +21,14 @@ import eu.bitwalker.useragentutils.UserAgent;
 import eu.bitwalker.useragentutils.Version;
 import is.tagomor.woothee.Classifier;
 
-import javax.json.Json;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-import javax.json.JsonValue;
+import javax.json.*;
 
 import org.apache.log4j.Logger;
 import org.webrtc.kite.Utility;
+import org.webrtc.kite.exception.KiteInsufficientValueException;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -43,15 +43,19 @@ public class Browser extends KiteConfigObject {
   private static final Logger logger = Logger.getLogger(Browser.class.getName());
 
   // Mandatory
-  private String browserName;
+  private final String browserName;
   private String version;
   private String platform;
 
   // Optional
-  private Mobile mobile;
-  private String remoteAddress;
+  private boolean focus;
   private boolean headless = false;
+  private List<String> flags = new ArrayList<>();
   private boolean technologyPreview = false;
+  private String remoteAddress;
+  private String pathToBinary;
+  private String fakeMediaFile;
+  private Mobile mobile;
 
   // Info from web driver
   private String webDriverVersion;
@@ -64,9 +68,8 @@ public class Browser extends KiteConfigObject {
   // Private
   private int maxInstances;
 
-
   /**
-   * Constructs a new Browser with the given browser name.
+   * Constructs a new Browser for the given browser name, without specifying version and platform.
    *
    * @param browserName name of the browser as accepted in Selenium
    */
@@ -93,16 +96,29 @@ public class Browser extends KiteConfigObject {
    * @param remoteAddress a string representation of the Selenium hub url
    * @param jsonObject    JsonObject
    */
-  public Browser(String remoteAddress, JsonObject jsonObject) {
+  public Browser(String remoteAddress, JsonObject jsonObject)
+      throws KiteInsufficientValueException {
     this.browserName = jsonObject.getString("browserName");
     this.version = jsonObject.getString("version");
     this.platform = jsonObject.getString("platform");
+    this.focus = jsonObject.getBoolean("focus", true);
     this.headless = jsonObject.getBoolean("headless", false);
     this.technologyPreview = jsonObject.getBoolean("technologyPreview", false);
     this.remoteAddress = jsonObject.getString("remoteAddress", remoteAddress);
-    JsonValue jsonValue = jsonObject.getOrDefault("mobile", null);
-    if (jsonValue != null)
-      this.mobile = new Mobile((JsonObject) jsonValue);
+    this.pathToBinary = jsonObject.getString("pathToBinary", "");
+    this.fakeMediaFile = jsonObject.getString("fakeMediaFile", null);
+    JsonValue jsonValue = jsonObject.getOrDefault("flags", null);
+    if (jsonValue != null) {
+      JsonArray flagArray = (JsonArray) jsonValue;
+      for (int i = 0; i < flagArray.size(); i++){
+        this.flags.add(flagArray.getString(i));
+      }
+    }
+    JsonValue mobile = jsonObject.getOrDefault("mobile", null);
+    if (mobile != null){
+      this.mobile = new Mobile((JsonObject) mobile);
+
+    }
   }
 
   /**
@@ -114,10 +130,13 @@ public class Browser extends KiteConfigObject {
     this.browserName = browser.getBrowserName();
     this.version = browser.getVersion();
     this.platform = browser.getPlatform();
-    this.mobile = browser.getMobile();
-    this.remoteAddress = browser.getRemoteAddress();
+    this.focus = browser.isFocus();
     this.headless = browser.isHeadless();
     this.technologyPreview = browser.isTechnologyPreview();
+    this.remoteAddress = browser.getRemoteAddress();
+    this.pathToBinary = browser.getPathToBinary();
+    this.fakeMediaFile =browser.getFakeMediaFile();
+    this.mobile = browser.getMobile();
   }
 
   /**
@@ -127,15 +146,6 @@ public class Browser extends KiteConfigObject {
    */
   public String getBrowserName() {
     return browserName;
-  }
-
-  /**
-   * Sets browser name.
-   *
-   * @param browserName the browser name
-   */
-  public void setBrowserName(String browserName) {
-    this.browserName = browserName;
   }
 
   /**
@@ -154,6 +164,24 @@ public class Browser extends KiteConfigObject {
    */
   public void setVersion(String version) {
     this.version = version;
+  }
+
+  /**
+   * Gets path binary.
+   *
+   * @return the path binary
+   */
+  public String getPathToBinary() {
+    return pathToBinary;
+  }
+
+  /**
+   * Sets browser name.
+   *
+   * @param pathToBinary the path binary
+   */
+  public void setPathToBinary(String pathToBinary) {
+    this.pathToBinary = pathToBinary;
   }
 
   /**
@@ -220,6 +248,15 @@ public class Browser extends KiteConfigObject {
   }
 
   /**
+   * Is focus boolean.
+   *
+   * @return the boolean
+   */
+  public boolean isFocus() {
+    return focus;
+  }
+
+  /**
    * Sets headless.
    *
    * @param technologyPreview the technologyPreview
@@ -243,6 +280,23 @@ public class Browser extends KiteConfigObject {
    */
   public void setHeadless(boolean headless) {
     this.headless = headless;
+  }
+
+  /**
+   * Get browser's flags.
+   *
+   * @return list of arguments to launch browser with.
+   */
+  public List<String> getFlags() {
+    return flags;
+  }
+
+  /**
+   * Adds one flag to the flag list.
+   * @param flag to add.
+   */
+  public void addFlag(String flag){
+    this.flags.add(flag);
   }
 
   /**
@@ -354,11 +408,13 @@ public class Browser extends KiteConfigObject {
   public void setUserAgentVersionAndPlatfom(String userAgentString) {
     UserAgent userAgent = UserAgent.parseUserAgentString(userAgentString);
     Version version = userAgent.getBrowserVersion();
-    if (version != null)
+    if (version != null) {
       this.userAgentVersion = version.getVersion();
+    }
     OperatingSystem operatingSystem = userAgent.getOperatingSystem();
-    if (operatingSystem != null)
+    if (operatingSystem != null) {
       this.userAgentPlatform = operatingSystem.getName();
+    }
     if (this.userAgentPlatform != null && this.userAgentPlatform.toLowerCase().startsWith("mac")) {
       Map<String, String> map = Classifier.parse(userAgentString);
       this.userAgentPlatform = this.userAgentPlatform + " " + map.get("os_version");
@@ -425,12 +481,15 @@ public class Browser extends KiteConfigObject {
 
   @Override public int hashCode() {
     long hashCode = this.browserName.hashCode();
-    if (this.version != null)
+    if (this.version != null) {
       hashCode += this.version.hashCode();
-    if (this.platform != null)
+    }
+    if (this.platform != null) {
       hashCode += this.platform.hashCode();
-    if (this.mobile != null)
+    }
+    if (this.mobile != null) {
       hashCode += this.mobile.hashCode();
+    }
     return (int) hashCode;
   }
 
@@ -438,12 +497,19 @@ public class Browser extends KiteConfigObject {
     JsonObjectBuilder jsonObjectBuilder =
         Json.createObjectBuilder().add("browserName", this.getBrowserName());
 
-    if (this.version != null)
+    if (this.version != null){
       jsonObjectBuilder.add("version", this.version);
-    if (this.platform != null)
+    }
+    if (this.platform != null){
       jsonObjectBuilder.add("platform", this.platform);
-    if (this.mobile != null)
+    }
+    if (this.pathToBinary != null) {
+      jsonObjectBuilder.add("pathToBinary", this.pathToBinary);
+    }
+    if (this.mobile != null) {
       jsonObjectBuilder.add("mobile", this.mobile.getJsonObjectBuilder());
+    }
+    jsonObjectBuilder.add("focus", this.isFocus());
 
     return jsonObjectBuilder;
   }
@@ -454,32 +520,34 @@ public class Browser extends KiteConfigObject {
 
     // Select the version
     String myVersion = null;
-    if (Utility.isNotNullAndNotEmpty(this.userAgentVersion))
+    if (Utility.isNotNullAndNotEmpty(this.userAgentVersion)) {
       myVersion = this.userAgentVersion;
-    else if (Utility.isNotNullAndNotEmpty(this.webDriverVersion))
+    } else if (Utility.isNotNullAndNotEmpty(this.webDriverVersion)) {
       myVersion = this.webDriverVersion;
-    else if (Utility.isNotNullAndNotEmpty(this.version))
+    } else if (Utility.isNotNullAndNotEmpty(this.version)) {
       myVersion = this.version;
-    if (myVersion != null)
+    }
+    if (myVersion != null) {
       jsonObjectBuilder.add("version", myVersion);
-
+    }
     // Select the platform
     String myPlatform = null;
     if (Utility.isNotNullAndNotEmpty(this.userAgentPlatform)) {
       myPlatform = this.userAgentPlatform;
     } else if (Utility.isNotNullAndNotEmpty(this.webDriverPlatform)) {
       myPlatform = this.webDriverPlatform;
-      if (myPlatform.equalsIgnoreCase("ANY") && Utility.isNotNullAndNotEmpty(this.platform))
+      if (myPlatform.equalsIgnoreCase("ANY") && Utility.isNotNullAndNotEmpty(this.platform)) {
         myPlatform = this.platform;
+      }
     } else if (Utility.isNotNullAndNotEmpty(this.platform)) {
       myPlatform = this.platform;
     }
-    if (myPlatform != null)
+    if (myPlatform != null) {
       jsonObjectBuilder.add("platform", myPlatform);
-
-    if (this.mobile != null)
+    }
+    if (this.mobile != null) {
       jsonObjectBuilder.add("mobile", this.mobile.getJsonObjectBuilder());
-
+    }
     return jsonObjectBuilder;
   }
 
@@ -523,18 +591,39 @@ public class Browser extends KiteConfigObject {
             || myPlatform.toLowerCase().startsWith("mac") && osName.toLowerCase()
             .startsWith("mac")) {
           myPlatform = osName + osVersion;
-          if (logger.isDebugEnabled())
+          if (logger.isDebugEnabled()) {
             logger.debug(
-                "Replacing platform info from exception info - replacing: " + myPlatform + " with: "
-                    + osName + osVersion);
+                "Replacing platform info from exception info - replacing: "
+                    + myPlatform
+                    + " with: "
+                    + osName
+                    + osVersion);
+          }
         }
       }
     }
 
-    if (myPlatform != null)
+    if (myPlatform != null) {
       jsonObjectBuilder.add("platform", myPlatform);
+    }
 
     return jsonObjectBuilder;
+  }
+
+  /**
+   * For Chrome only.
+   * @return path to the video file to be used by Chrome as fakemedia, or null if no file has been specified
+   */
+  public String getFakeMediaFile() {
+    return fakeMediaFile;
+  }
+
+  /**
+   * For Chrome only.
+   * @param fakeMediaFile path to the video file to be used by Chrome as fakemedia
+   */
+  public void setFakeMediaFile(String fakeMediaFile) {
+    this.fakeMediaFile = fakeMediaFile;
   }
 
 }

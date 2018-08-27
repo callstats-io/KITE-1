@@ -153,4 +153,29 @@ public class Utility {
     return object1 != null && object2 != null;
   }
 
+
+  /**
+   *
+   * The OS Name without the version, meant for Browser.setPlatform(String platform) (e.g.: Windows, Linux, Mac...).
+   * It will return System.getProperty("os.name") if it's not a standard Linux, Windows or Mac OS name.
+   *
+   * @return OS Name without the version(e.g.: Windows, Linux, Mac...)
+   */
+  public static String getPlatform() {
+    String osName = System.getProperty("os.name");
+    if(osName.toLowerCase().contains("win")) {
+      return "Windows";
+    }
+    if(osName.toLowerCase().contains("mac")) {
+      return "Mac";
+    }
+    if(osName.toLowerCase().contains("nux")) {
+      return "Linux";
+    }
+    if(osName.toLowerCase().contains("nix")) {
+      return "Unix";
+    }
+    return osName;
+  }
+
 }

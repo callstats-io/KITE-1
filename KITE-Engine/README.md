@@ -22,7 +22,7 @@ java -cp kite-jar-with-dependencies.jar:apprtc-test-1.0.jar org.webrtc.kite.Engi
                 "name": "IceConnectionTest",
                 "tupleSize": 2,
                 "description": "This test check the ICEConnection state between two browsers communicating via appr.tc",
-                "testImpl": "org.webrtc.kite.IceConnectionTest"
+                "testImpl": "org.webrtc.kite.apprtc.network.IceConnectionTest"
             }
         ],
         "browsers": [

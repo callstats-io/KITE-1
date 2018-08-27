@@ -14,23 +14,10 @@
 //	limitations under the License.
 //
 
+var startTimes = [];
+var overallStats = [[], [], []];
+var myLineChart;
 
-$(document).on("click", "i", function(e) {
-    var id = $(this).attr('name');
-    if($(this).attr('class')=='pe-7s-angle-down-circle green'){
-        $("#"+id).css("height","300px");
-        $("#"+id).css("overflow","visible");
-        $(this).attr('class', 'pe-7s-angle-up-circle red');
-
-    }
-    else{
-        if($(this).attr('class')=='pe-7s-angle-up-circle red'){
-            $("#"+id).css("height","60px");
-            $("#"+id).css("overflow","hidden");
-            $(this).attr('class', 'pe-7s-angle-down-circle green');
-        }
-    }
-});
 
 $(document).on("click", "#submit", function(e) {
     var chosenTest = $("#chosen-test").find(":selected").text();
@@ -61,14 +48,15 @@ function getStats (request){
         });
     })();
 }
+
 function displayStats (load){
     var dates = load.run_dates;
     var callerStatArray = load.caller;
     var calleeStatArray = load.callee;
-    if (callerStatArray.length > 30){
-        callerStatArray = callerStatArray.slice(0,29);
-        calleeStatArray = calleeStatArray.slice(0,29);
-        dates = dates.slice(0,29);
+    if (callerStatArray.length > 20){
+        callerStatArray = callerStatArray.slice(0,19);
+        calleeStatArray = calleeStatArray.slice(0,19);
+        dates = dates.slice(0,19);
     }
 
 
@@ -269,61 +257,107 @@ function isEmpty(obj) {
     return true;
 }
 
-$(document).ready(function(){
-    $('[data-toggle="tooltip"]').tooltip();
-    var labels = [];
-    for (i = stats[0].length; i > 0; i--){
-        labels.push('.');
-    }
-    var config = {
-        type: 'line',
-        data: {
-            labels: config_labels,
-            datasets: [
-                {
-                    label: "Success",
-                    backgroundColor: '#42f4aa',
-                    borderColor: '#42f4aa',
-                    fill: false,
-                    data: stats[0],
-                    pointRadius: 2
-                },
-                {
-                    label: "Failed",
-                    backgroundColor: '#ff4b30',
-                    borderColor: '#ff4b30',
-                    fill: false,
-                    data: stats[1],
-                    pointRadius: 2
-                },
-                {
-                    label: "Error",
-                    backgroundColor: '#30b3ff',
-                    borderColor: '#30b3ff',
-                    fill: false,
-                    data: stats[2],
-                    pointRadius: 2
-                }
-            ]
-        },
-        options: {
-            responsive: true,
-            title:{
-                display:false,
-                text:'Result throughout configurations'
-            },
-            scales: {
-                xAxes: [{
-                    display: true,
-                }],
-                yAxes: [{
-                    display: true,
-                    type: 'linear',
-                }]
-            },
-            showLines: true
-        }
-    };
 
-var myLineChart = new Chart($("#overtime-result"),config);
+
+$(document).on("click", ".overall", function(e) {
+    selectedTest = $(this).attr('id');
+    $('#selectedTest').html(selectedTest);
+    console.log('Test selected: '+ selectedTest);
+    getAndUpdateOverallStat(selectedTest);
+});
+
+
+function updateOverall (){
+    myChart.data.datasets.forEach((dataset) => {
+        dataset.data = overallStats;
+    });
+    myChart.update();
+}
+
+function getAndUpdateOverallStat( testName ){
+  $('#loadingStatus').html('<i class="fa fa-spinner fa-spin"></i>');
+  overallStats = [[], [], []];
+  startTimes = [];
+  (function getOverallStat() {
+    $.ajax({
+      url: 'getoverall?testName='+testName,
+      success: function(result){
+        $('#loadingStatus').html('');
+        var data = JSON.parse(result);
+        data.forEach(function (stat){
+          startTimes.unshift(stat.startTime);
+          for (i = 0; i <3 ; i++){
+            overallStats[i].unshift(stat.stats[i]);
+          }
+        })
+        for (i = 0; i <3 ; i++){
+          myLineChart.data.datasets[i].data = overallStats[i];
+        }
+        myLineChart.data.labels = startTimes;
+        myLineChart.update();
+        console.log(startTimes);
+      }
+    });
+  })();
+
+}
+
+
+$(document).ready(function(){
+/*  var labels = [];
+  for (i = stats[0].length; i > 0; i--){
+    labels.push('.');
+  }*/
+  var config = {
+    type: 'line',
+    data: {
+      labels: startTimes,
+      datasets: [
+        {
+          label: "Success",
+          backgroundColor: '#42f4aa',
+          borderColor: '#42f4aa',
+          fill: false,
+          data: overallStats[0],
+          pointRadius: 2
+        },
+        {
+          label: "Failed",
+          backgroundColor: '#ff4b30',
+          borderColor: '#ff4b30',
+          fill: false,
+          data: overallStats[1],
+          pointRadius: 2
+        },
+        {
+          label: "Error",
+          backgroundColor: '#30b3ff',
+          borderColor: '#30b3ff',
+          fill: false,
+          data: overallStats[2],
+          pointRadius: 2
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      title:{
+        display:false,
+        text:'Result throughout configurations'
+      },
+      scales: {
+        xAxes: [{
+            display: true,
+        }],
+        yAxes: [{
+          display: true,
+          type: 'linear',
+        }]
+      },
+      showLines: true
+    }
+  };
+myLineChart = new Chart($("#overtime-result"),config);
+getAndUpdateOverallStat(selectedTest);
 });
