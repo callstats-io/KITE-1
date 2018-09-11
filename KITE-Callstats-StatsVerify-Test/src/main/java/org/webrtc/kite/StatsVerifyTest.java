@@ -17,11 +17,7 @@
 package org.webrtc.kite;
 
 import org.apache.log4j.Logger;
-import org.openqa.selenium.NoAlertPresentException;
-import org.openqa.selenium.Alert;
-import org.openqa.selenium.By;
-import org.openqa.selenium.JavascriptExecutor;
-import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.*;
 import org.openqa.selenium.remote.RemoteWebDriver;
 import org.webrtc.kite.stat.Utility;
 
@@ -222,10 +218,10 @@ public class StatsVerifyTest extends KiteTest {
         ((JavascriptExecutor) webDriver).executeScript(this.stashStatsScript());
         Thread.sleep(INTERVAL);
         Object stats = ((JavascriptExecutor) webDriver).executeScript(this.getStatsScript());
-        String browser = ((RemoteWebDriver)webDriver).getCapabilities().getBrowserName();
+        Capabilities cap = ((RemoteWebDriver)webDriver).getCapabilities();
 
         //comment out the following line to remove browser from the JSON object.
-        resultMap.put("browser_" + count, browser + "_" + count);
+        resultMap.put("browser_" + count, cap);
 
 
         resultMap.put("client_" + count, stats);

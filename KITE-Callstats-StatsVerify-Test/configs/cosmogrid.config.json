@@ -1,0 +1,80 @@
+{
+  "name": "local selenium example",
+  "_callback": "http://localhost:8080/kiteweb/datacenter",
+  "remotes": [
+    {
+      "type": "local",
+      "remoteAddress": "http://192.168.2.2:4445/wd/hub"
+    }
+  ],
+  "tests": [
+    {
+      "name": "StatsVerifyTest",
+      "tupleSize": 2,
+      "description": "This test collect browser stats for csio getStats verify application",
+      "testImpl": "org.webrtc.kite.StatsVerifyTest"
+    }
+  ],
+  "browsers": [
+    {
+      "browserName": "chrome",
+      "version": "68",
+      "platform": "WINDOWS"
+    },
+    {
+      "browserName": "chrome",
+      "version": "70",
+      "platform": "WINDOWS"
+    },
+    {
+      "browserName": "firefox",
+      "version": "61",
+      "platform": "WINDOWS"
+    },
+    {
+      "browserName": "firefox",
+      "version": "63",
+      "platform": "WINDOWS"
+    },
+    {
+      "browserName": "MicrosoftEdge",
+      "version": "17.17741",
+      "platform": "WINDOWS"
+    },
+    {
+      "browserName": "chrome",
+      "version": "68",
+      "platform": "LINUX"
+    },
+    {
+      "browserName": "firefox",
+      "version": "61",
+      "platform": "LINUX"
+    },
+    {
+      "browserName": "chrome",
+      "version": "ANDROID 68",
+      "platform": "ANDROID"
+    },
+    {
+      "browserName": "safari",
+      "version": "11",
+      "platform": "IOS"
+    },
+    {
+      "browserName": "chrome",
+      "version": "68",
+      "platform": "MAC"
+    },
+    {
+      "browserName": "firefox",
+      "version": "61",
+      "platform": "MAC"
+    },
+    {
+      "browserName": "safari",
+      "version": "11",
+      "platform": "MAC"
+    }
+]
+}

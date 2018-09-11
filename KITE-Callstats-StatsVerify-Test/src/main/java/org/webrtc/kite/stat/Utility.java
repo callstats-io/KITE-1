@@ -16,6 +16,8 @@
 
 package org.webrtc.kite.stat;
 
+import org.openqa.selenium.Capabilities;
+
 import javax.json.*;
 import javax.json.stream.JsonGenerator;
 import java.io.File;
@@ -46,8 +48,9 @@ public class Utility {
      * @param clientStatsBoth of data sent back from test
      * @return JsonObjectBuilder.
      */
-    public static JsonObjectBuilder buildClientObject(Object clientStatsBoth, Object clientStatsAudioOnly, Object clientStatsVideoOnly) {
+    public static JsonObjectBuilder buildClientObject(Object clientStatsBoth, Object clientStatsAudioOnly, Object clientStatsVideoOnly, Object capabilities) {
         JsonObjectBuilder tmpJsonObjectBuilderBoth = Json.createObjectBuilder();
+
         Map<String, Object> treeMapBoth = (Map<String, Object>) clientStatsBoth;
         for (Map.Entry<String, Object> entry : treeMapBoth.entrySet()) {
             String key = entry.getKey();
@@ -92,6 +95,14 @@ public class Utility {
                 StandardRTCStats.getStandardGetStats(false, 10));
 
         JsonObjectBuilder retval = Json.createObjectBuilder();
+        if (capabilities != null && capabilities instanceof Capabilities) {
+            Capabilities cap = (Capabilities)capabilities;
+            JsonObjectBuilder jbuild = Json.createObjectBuilder();
+            jbuild.add("browserName", cap.getBrowserName());
+            jbuild.add("version", cap.getVersion());
+            jbuild.add("platform", cap.getPlatform().toString());
+            retval.add("browser", jbuild);
+        }
         retval.add("csioGetStatsDiff", jsonObjectBuilder);
         return retval;
     }
@@ -110,14 +121,11 @@ public class Utility {
         for (int i = 1; i <= tupleSize; i++) {
             String name = "client_" + i;
             String browser = "browser_" + i;
-            if (audioVideoBoth.get(browser) != null && audioOnly.get(browser) != null) {
-                tmp.add(browser, audioVideoBoth.get(browser).toString());
-            }
             if (audioVideoBoth.get(name) != null && audioOnly.get(name) != null) {
                 tmp.add(
                     name,
                     Utility.buildClientObject(
-                        audioVideoBoth.get(name), audioOnly.get(name), videoOnly.get(name)));
+                        audioVideoBoth.get(name), audioOnly.get(name), videoOnly.get(name), (Capabilities)audioVideoBoth.get(browser)));
                         }
         }
 
