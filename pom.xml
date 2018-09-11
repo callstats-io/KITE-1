@@ -33,6 +33,7 @@
     <module>KITE-NoAdapter-Test</module>
     <module>KITE-WP-Test</module>
     <module>KITE-Dashboard</module>
+    <module>KITE-Callstats-StatsVerify-Test</module>
   </modules>
 
 </project>

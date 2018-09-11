@@ -1,0 +1,30 @@
+{
+  "name": "local selenium example",
+  "_callback": "http://localhost:8080/kiteweb/datacenter",
+  "remotes": [
+    {
+      "type": "local",
+      "remoteAddress": "http://localhost:4444/wd/hub"
+    }
+  ],
+  "tests": [
+    {
+      "name": "StatsVerifyTest",
+      "tupleSize": 2,
+      "description": "This test collect browser stats for csio getStats verify application",
+      "testImpl": "org.webrtc.kite.StatsVerifyTest"
+    }
+  ],
+  "browsers": [
+    {
+      "browserName": "chrome",
+      "version": "68",
+      "platform": "WINDOWS"
+    },
+    {
+      "browserName": "firefox",
+      "version": "61",
+      "platform": "WINDOWS"
+    }
+]
+}
