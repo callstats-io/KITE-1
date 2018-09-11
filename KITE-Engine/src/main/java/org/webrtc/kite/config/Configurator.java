@@ -73,8 +73,29 @@ public class Configurator {
   private int type;
   private String name;
   private int interval;
+  private String commandName;
+  private Instrumentation instrumentation;
 
   private ConfigHandler configHandler;
+
+
+  /**
+   * Sets the command name for the NW instrumentation.
+   *
+   * @param commandName name of the command
+   */
+  public void setCommandName(String commandName) {
+    this.commandName = commandName;
+  }
+
+  /**
+   * Gets the command name for the NW instrumentation.
+   *
+   * @return the name of the command
+   */
+  public String getCommandName() {
+    return this.commandName;
+  }
 
   /**
    * Gets time stamp.
@@ -110,6 +131,10 @@ public class Configurator {
     return this.interval;
   }
 
+  public Instrumentation getInstrumentation() {
+    return instrumentation;
+  }
+
   /**
    * Gets config handler.
    *
@@ -143,10 +168,10 @@ public class Configurator {
    * @throws InvocationTargetException        the invocation target exception
    * @throws KiteGridException                the kite grid exception
    */
-  public void buildConfig(File file) throws FileNotFoundException, KiteUnsupportedIntervalException,
-      KiteInsufficientValueException, NoSuchMethodException, IllegalAccessException,
-      InstantiationException, KiteUnsupportedRemoteException, InvocationTargetException,
-      KiteGridException {
+  public void buildConfig(File file)
+      throws IOException, KiteUnsupportedIntervalException, KiteInsufficientValueException,
+      NoSuchMethodException, IllegalAccessException, InstantiationException,
+      KiteUnsupportedRemoteException, InvocationTargetException, KiteGridException {
 
     FileReader fileReader = null;
     JsonReader jsonReader = null;
@@ -205,6 +230,14 @@ public class Configurator {
     this.configHandler =
         new ConfigTypeOneHandler(callbackURL, remoteObjectList, testObjectList, browserObjectList);
 
+    String instrumentUrl = jsonObject.getString("instrumentUrl", null);
+    if (instrumentUrl != null) {
+      String instrumentFile = System.getProperty("java.io.tmpdir") + "instrumentation.json";
+      Utility.downloadFile(instrumentUrl, instrumentFile);
+      JsonObject instrumentObject = Utility.getJsonObject(instrumentFile);
+      this.instrumentation = new Instrumentation(instrumentObject);
+    }
+
     logger.info("Finished reading the configuration file");
   }
 
@@ -218,8 +251,8 @@ public class Configurator {
 
     List<Browser> focusedList = new ArrayList<>();
     List<Browser> browserList = (List<Browser>) this.configHandler.getBrowserList();
-    for (Browser browser: browserList){
-      if (browser.isFocus()){
+    for (Browser browser : browserList) {
+      if (browser.isFocus()) {
         focusedList.add(browser);
       }
     }
@@ -245,14 +278,14 @@ public class Configurator {
         }
       }
     }
-    
+
     List<List<Browser>> tempListOfTuples = new ArrayList<>(listOfTuples);
-    for (List<Browser> tuple: tempListOfTuples){
-      if (Collections.disjoint(tuple,focusedList)){
+    for (List<Browser> tuple : tempListOfTuples) {
+      if (Collections.disjoint(tuple, focusedList)) {
         listOfTuples.remove(tuple);
       }
     }
-    
+
     Collections.shuffle(listOfTuples);
     return listOfTuples;
   }

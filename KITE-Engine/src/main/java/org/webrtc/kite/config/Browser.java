@@ -497,10 +497,10 @@ public class Browser extends KiteConfigObject {
     JsonObjectBuilder jsonObjectBuilder =
         Json.createObjectBuilder().add("browserName", this.getBrowserName());
 
-    if (this.version != null){
+    if (this.version != null) {
       jsonObjectBuilder.add("version", this.version);
     }
-    if (this.platform != null){
+    if (this.platform != null) {
       jsonObjectBuilder.add("platform", this.platform);
     }
     if (this.pathToBinary != null) {

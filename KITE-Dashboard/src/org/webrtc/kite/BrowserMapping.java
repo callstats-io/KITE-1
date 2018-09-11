@@ -30,11 +30,11 @@ public class BrowserMapping {
   public static List<String> OsList = new ArrayList<>();
   public static List<String> VersionList = new ArrayList<>();
   public static String StableEdge = "17.17134";
-  public static String NightlyEdge = "17.17686";
+  public static String NightlyEdge = "17.17713";
   public static String StableSafari = "11.0";
   public static String NightlySafari = "11.1";
-  public static String StableFirefox = "60.0";
-  public static String NightlyFirefox = "62.0";
+  public static String StableFirefox = "61.0";
+  public static String NightlyFirefox = "63.0";
   public static String StableChrome = "67.0";
   public static String CanaryChrome = "69.0";
   public static List<String> ClientList = new ArrayList<>();
@@ -92,6 +92,6 @@ public class BrowserMapping {
     BrowserList.add(new Browser("safari", NightlySafari, "OS X 10.13"));
     BrowserList.add(new Browser("safari", StableSafari, "IOS"));
     BrowserList.add(new Browser("chrome", StableChrome, "android"));
-    BrowserList.add(new Browser("firefox", StableFirefox, "android"));
+    //BrowserList.add(new Browser("firefox", StableFirefox, "android"));
   }
 }

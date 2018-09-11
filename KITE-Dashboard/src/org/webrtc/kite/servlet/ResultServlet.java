@@ -19,6 +19,7 @@ package org.webrtc.kite.servlet;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.webrtc.kite.BrowserMapping;
+import org.webrtc.kite.TestMapping;
 import org.webrtc.kite.Utility;
 import org.webrtc.kite.dao.BrowserDao;
 import org.webrtc.kite.dao.ExecutionDao;
@@ -31,10 +32,7 @@ import org.webrtc.kite.pojo.Execution;
 import org.webrtc.kite.pojo.Result;
 import org.webrtc.kite.pojo.Test;
 
-import javax.json.Json;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
+import javax.json.*;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -65,75 +63,169 @@ public class ResultServlet extends HttpServlet {
   protected void doGet(HttpServletRequest request, HttpServletResponse response)
       throws ServletException, IOException {
 
-    String testID = request.getParameter("test");
-    String browserId = request.getParameter("browser");
-    String configName = request.getParameter("configName");
-    if (testID == null) {
-      throw new KiteNoKeyException("testID");
-    }
-    if (log.isDebugEnabled()) {
-      log.debug("in->test ID: " + testID);
-    }
-
     List<Test> listOfDistinctTest;
     List<Result> resultList;
+    JsonArrayBuilder resultJson = Json.createArrayBuilder();
+
     Test test;
-    int testIDInt = Integer.parseInt(testID);
-    try {
-      listOfDistinctTest =
-          new TestDao(Utility.getDBConnection(this.getServletContext())).getDistinctTestList();
-      request.setAttribute("listOfTest", listOfDistinctTest);
-      test = new TestDao(Utility.getDBConnection(this.getServletContext())).getTestById(testIDInt);
-      request.setAttribute("test", test);
-      request.setAttribute("testJsonData", test.getJsonData());
-      JsonArrayBuilder resultJson = Json.createArrayBuilder();
-      List<Browser> browserList = new ArrayList<>();
-      if (browserId==null) {
-        resultList = new ResultDao(Utility.getDBConnection(this.getServletContext()))
-                .getresultByTestId(test.getTestName(), test.getTestId());
-      } else {
-        resultList = new ArrayList<>();
 
-        Browser browser = new BrowserDao(Utility.getDBConnection(this.getServletContext()))
-                .getBrowserById(Integer.parseInt(browserId));
-        for (List<Browser> browsers :
-                Utility.buildTuples(BrowserMapping.BrowserList, test.getTupleSize())) {
+    String ready = request.getParameter("ready");
+    if (ready!=null) {
+      request.setAttribute("ready", true);
+      try {
+        listOfDistinctTest =
+                new TestDao(Utility.getDBConnection(this.getServletContext())).getDistinctTestList();
+        request.setAttribute("listOfTest", listOfDistinctTest);
+        List<Test> testList = new TestDao(Utility.getDBConnection(this.getServletContext())).getTestListByTestName(ready);
+        if (!testList.isEmpty()){
+          test = testList.get(testList.size()-1);
+          request.setAttribute("test", test);
+          request.setAttribute("testJsonData", test.getJsonData());
+          String testName = test.getTestName();
+          String testCodeLink = TestMapping.TestCodeLinkMapping.get(testName);
+          if (testCodeLink == null) {
+            testCodeLink = "NA";
+          }
+          request.setAttribute("testCodeLink", testCodeLink);
+          resultList = new ArrayList<>();
+          List<List<Browser>> tupleList = Utility.buildTuples(BrowserMapping.BrowserList, test.getTupleSize());
+          for (List<Browser> browsers : tupleList ) {
+            JsonArrayBuilder idArray = Json.createArrayBuilder();
+            //browsers.remove(browser);
+            for (Browser browser : browsers) {
+              int browser1Id =
+                      new BrowserDao(Utility.getDBConnection(this.getServletContext()))
+                              .getId(browser);
+              if (browser1Id != -1) {
+                idArray.add(browser1Id);
+              }
+            }
+            JsonArray ids = idArray.build();
+            Result result = null;
+            if (ids.size() == browsers.size()) {
+              result = new ResultDao(Utility.getDBConnection(this.getServletContext()))
+                              .getLatestResultByBrowser(testName, ids.toString());
+              if (result == null) {
+                result = new Result("SCHEDULED");
+                result.setBrowserList(browsers);
+              }
+            } else {
+              result = new Result("SCHEDULED");
+              result.setBrowserList(browsers);
+            }
+            resultList.add(result);
+          }
+
+          for (Result result : resultList) {
+            JsonObjectBuilder resultObj = Json.createObjectBuilder();
+            JsonArrayBuilder browsers = Json.createArrayBuilder();
+
+            for (Browser browser : result.getBrowserList()) {
+              browsers.add(browser.getJsonObjectBuilder());
+            }
+            resultObj.add("browsers", browsers);
+            if (result != null) {
+              resultObj.add("id", result.getId())
+                      .add("result", result.getResult())
+                      .add("duration", result.getDuration())
+                      .add("startTime", result.getStartTime())
+                      .add("stats", result.getStats());
+              resultJson.add(resultObj);
+            } else {
+              resultObj.add("id", 0)
+                      .add("result", "NA")
+                      .add("duration", 0)
+                      .add("startTime", 0)
+                      .add("stats", false);
+            }
+          }
+          request.setAttribute("jsonResultList", resultJson.build().toString());
+          JsonArrayBuilder browserListJson = Json.createArrayBuilder();
+          for (Browser browser : BrowserMapping.BrowserList) {
+            browserListJson.add(browser.getJsonObjectBuilder());
+          }
+          request.setAttribute("jsonBrowserList", browserListJson.build().toString());
+          request.setAttribute("jsonBrowserList", browserListJson.build().toString());
+          request.setAttribute("configName", "Latest results");
         }
+      } catch (SQLException e) {
+        e.printStackTrace();
+        throw new KiteSQLException(e.getLocalizedMessage());
       }
-      for (Result result : resultList){
-        JsonObjectBuilder resultObj = Json.createObjectBuilder();
-        JsonArrayBuilder browsers = Json.createArrayBuilder();
-        for (Browser browser: result.getBrowserList()){
-          browserList.add(browser);
-          browsers.add(browser.getJsonObjectBuilder());
-        }
-        resultObj.add("browsers", browsers)
-                .add("id", result.getId())
-                .add("result", result.getResult())
-                .add("duration", result.getDuration())
-                .add("startTime", result.getStartTime())
-                .add("stats", result.getStats());
-        resultJson.add(resultObj);
+    } else {
+      request.setAttribute("ready", false);
+      String testID = request.getParameter("test");
+      String browserId = request.getParameter("browser");
+      String configName = request.getParameter("configName");
+      if (testID == null) {
+        throw new KiteNoKeyException("testID");
       }
-      request.setAttribute("jsonResultList", resultJson.build().toString());
-      JsonArrayBuilder browserListJson = Json.createArrayBuilder();
-      Set<Browser> distinctBrowserList = new HashSet<>(browserList);
-      for (Browser browser: distinctBrowserList){
-        browserListJson.add(browser.getJsonObjectBuilder());
+      if (log.isDebugEnabled()) {
+        log.debug("in->test ID: " + testID);
       }
 
-      request.setAttribute("jsonBrowserList", browserListJson.build().toString());
-      if (configName == null) {
-        Execution config = new ExecutionDao(Utility.getDBConnection(this.getServletContext()))
-                .getExecutionById(test.getConfigId());
-        if (config!=null){
-          configName = config.getConfigName();
+      int testIDInt = Integer.parseInt(testID);
+      try {
+        listOfDistinctTest =
+                new TestDao(Utility.getDBConnection(this.getServletContext())).getDistinctTestList();
+        request.setAttribute("listOfTest", listOfDistinctTest);
+        test = new TestDao(Utility.getDBConnection(this.getServletContext())).getTestById(testIDInt);
+        request.setAttribute("test", test);
+        request.setAttribute("testJsonData", test.getJsonData());
+        String testName = test.getTestName();
+        String testCodeLink = TestMapping.TestCodeLinkMapping.get(testName);
+        if (testCodeLink == null) {
+          testCodeLink = "NA";
         }
+        request.setAttribute("testCodeLink", testCodeLink);
+        List<Browser> browserList = new ArrayList<>();
+        if (browserId == null) {
+          resultList = new ResultDao(Utility.getDBConnection(this.getServletContext()))
+                  .getresultByTestId(test.getTestName(), test.getTestId());
+        } else {
+          resultList = new ArrayList<>();
+
+          Browser browser = new BrowserDao(Utility.getDBConnection(this.getServletContext()))
+                  .getBrowserById(Integer.parseInt(browserId));
+          for (List<Browser> browsers :
+                  Utility.buildTuples(BrowserMapping.BrowserList, test.getTupleSize())) {
+          }
+        }
+        for (Result result : resultList) {
+          JsonObjectBuilder resultObj = Json.createObjectBuilder();
+          JsonArrayBuilder browsers = Json.createArrayBuilder();
+          for (Browser browser : result.getBrowserList()) {
+            browserList.add(browser);
+            browsers.add(browser.getJsonObjectBuilder());
+          }
+          resultObj.add("browsers", browsers)
+                  .add("id", result.getId())
+                  .add("result", result.getResult())
+                  .add("duration", result.getDuration())
+                  .add("startTime", result.getStartTime())
+                  .add("stats", result.getStats());
+          resultJson.add(resultObj);
+        }
+        request.setAttribute("jsonResultList", resultJson.build().toString());
+        JsonArrayBuilder browserListJson = Json.createArrayBuilder();
+        Set<Browser> distinctBrowserList = new HashSet<>(browserList);
+        for (Browser browser : distinctBrowserList) {
+          browserListJson.add(browser.getJsonObjectBuilder());
+        }
+
+        request.setAttribute("jsonBrowserList", browserListJson.build().toString());
+        if (configName == null) {
+          Execution config = new ExecutionDao(Utility.getDBConnection(this.getServletContext()))
+                  .getExecutionById(test.getConfigId());
+          if (config != null) {
+            configName = config.getConfigName();
+          }
+        }
+        request.setAttribute("configName", configName);
+      } catch (SQLException e) {
+        e.printStackTrace();
+        throw new KiteSQLException(e.getLocalizedMessage());
       }
-      request.setAttribute("configName", configName);
-    } catch (SQLException e) {
-      e.printStackTrace();
-      throw new KiteSQLException(e.getLocalizedMessage());
     }
 
     // get UI

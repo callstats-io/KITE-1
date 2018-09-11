@@ -17,8 +17,11 @@
 package org.webrtc.kite.apprtc;
 
 import org.apache.log4j.Logger;
+import org.openqa.selenium.Alert;
 import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.NoAlertPresentException;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.remote.RemoteWebDriver;
 import org.webrtc.kite.KiteTest;
 import org.webrtc.kite.apprtc.network.IceConnectionTest;
 import org.webrtc.kite.apprtc.stats.*;
@@ -436,4 +439,29 @@ public class Utility {
       .build();
   }
 
+  /**
+   * Handles alert popup if exists
+   * @param webDriver
+   * @return String alert message
+   */
+  public static String alertHandling(WebDriver webDriver){
+    String alertMsg;
+    try {
+      Alert alert = webDriver.switchTo().alert();
+      alertMsg = alert.getText();
+      if (alertMsg != null) {
+        alertMsg =
+                ((RemoteWebDriver) webDriver).getCapabilities().getBrowserName()
+                        + " alert: "
+                        + alertMsg;
+        alert.accept();
+      }
+    } catch (ClassCastException e) {
+      alertMsg = " Cannot retrieve alert message due to alert.getText() class cast problem.";
+      webDriver.switchTo().alert().accept();
+    } catch (Exception e) {
+      alertMsg = null;
+    }
+    return alertMsg;
+  }
 }

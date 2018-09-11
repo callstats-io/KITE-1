@@ -97,14 +97,18 @@ public class PublicOverviewServlet extends HttpServlet {
             browserJson.add(browser.getJsonObjectBuilder());
             browserIdJson.add(browser.getId());
           }
-          String result = new ResultDao(Utility.getDBConnection(this.getServletContext()))
+          String resultString = null;
+          Result result = new ResultDao(Utility.getDBConnection(this.getServletContext()))
                   .getLatestResultByBrowser(testName, browserIdJson.build().toString());
+          if (result != null) {
+            resultString = result.getResult();
+          }
           if (result == null) {
-            result = "N/A";
+            resultString = "N/A";
           }
 
           singleResult.add("browsers", browserJson);
-          singleResult.add("result", result);
+          singleResult.add("result", resultString);
           resultJson.add(singleResult);
         }
         request.setAttribute("resultJson", resultJson.build().toString());
@@ -119,12 +123,19 @@ public class PublicOverviewServlet extends HttpServlet {
             browserJson.add(browser.getJsonObjectBuilder());
             browserIdJson.add(browser.getId());
           }
-          String resultStr = new ResultDao(Utility.getDBConnection(this.getServletContext()))
+          String resultString = null;
+          Result result = new ResultDao(Utility.getDBConnection(this.getServletContext()))
                   .getLatestResultByBrowser(testName, browserIdJson.build().toString());
-          if (resultStr == null) {
-            resultStr = "N/A";
+          if (result != null) {
+            resultString = result.getResult();
           }
-          Result result = new Result(resultStr);
+          if (result == null) {
+            resultString = "N/A";
+          }
+          if (resultString == null) {
+            resultString = "N/A";
+          }
+          result = new Result(resultString);
           result.setBrowserList(browsers);
           resultList.add(result);
         }

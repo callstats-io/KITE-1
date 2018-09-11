@@ -66,8 +66,6 @@ public class NoAdapterTest extends KiteTest {
   private final static String CHANNEL_INPUT = "channelId";
   private final static String START_BUTTON = "startButton";
   private static String url = null;
-  private static String IP = "localhost";
-  private static int port = 8083;
 
   private final static int TIMEOUT = 30000;
   private final static int INTERVAL = 1000;
@@ -101,10 +99,6 @@ public class NoAdapterTest extends KiteTest {
       JsonValue jsonValue = this.getPayload();
       JsonObject payload = (JsonObject) jsonValue;
       url = payload.getString("url", null);
-      if (url == null ) {
-        IP = payload.getString("ip", "localhost");
-        port = payload.getInt("port", 8083);
-      }
     }
   }
 
@@ -113,17 +107,16 @@ public class NoAdapterTest extends KiteTest {
    *
    * @return true if all browsers are ready for calls, false otherwise
    */
-  private boolean takeAction() {
+  private boolean takeAction() throws Exception {
     payloadHandling();
     final String channelId = Long.toString(Math.abs(rand.nextLong()));
     for (WebDriver webDriver : this.getWebDriverList()) {
-      if (url == null ) {
-        url = new StringBuilder("https://")
-          .append(IP).append(":").append(port).append("/").toString();
+      if (url == null) {
+        throw new Exception("No URL was specified");
       }
       webDriver.get(url);
-      webDriver.findElement(By.id(CHANNEL_INPUT)).sendKeys(channelId);
-      webDriver.findElement(By.id(START_BUTTON)).click();
+      input(webDriver, CHANNEL_INPUT, channelId);
+      click(webDriver, START_BUTTON);
       try {
         Alert alert = webDriver.switchTo().alert();
         alertMsg = alert.getText();
@@ -131,7 +124,10 @@ public class NoAdapterTest extends KiteTest {
           alertMsg = ((RemoteWebDriver) webDriver).getCapabilities().getBrowserName() + " alert: " +alertMsg;
           alert.accept();
         }
-      } catch (NoAlertPresentException e) {
+      } catch (ClassCastException e) {
+        alertMsg = " Cannot retrieve alert message due to alert.getText() class cast problem.";
+        webDriver.switchTo().alert().accept();
+      } catch (Exception e) {
         alertMsg = null;
       }
       // check that browser is ready for taking calls before initializing next one
@@ -194,6 +190,29 @@ public class NoAdapterTest extends KiteTest {
         return true;
     return false;
   }
+
+  /**
+   * Input a vlue to a specific field with id.
+   * @param webDriver browser in question
+   * @param id id of the field element
+   * @param value value to input
+   */
+  public static void input(WebDriver webDriver, String id, String value){
+    String script = "document.getElementById('" + id + "').value = '" + value + "'";
+    ((JavascriptExecutor) webDriver).executeScript(script);
+  }
+
+  /**
+   * Input a vlue to a specific field with id.
+   * @param webDriver browser in question
+   * @param id id of the field element
+   */
+
+  public static void click(WebDriver webDriver, String id){
+    String script = "document.getElementById('" + id + "').click()";
+    ((JavascriptExecutor) webDriver).executeScript(script);
+  }
+
 
   @Override
   public Object testScript() throws Exception {

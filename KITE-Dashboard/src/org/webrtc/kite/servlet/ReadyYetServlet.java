@@ -27,6 +27,7 @@ import org.webrtc.kite.dao.TestDao;
 import org.webrtc.kite.dao.WPTDao;
 import org.webrtc.kite.exception.KiteSQLException;
 import org.webrtc.kite.pojo.Browser;
+import org.webrtc.kite.pojo.Result;
 import org.webrtc.kite.pojo.Test;
 
 import javax.json.*;
@@ -63,6 +64,7 @@ public class ReadyYetServlet extends HttpServlet {
     String test = request.getParameter("test");
 
     List<Test> listOfDistinctTest;
+    String resultString = null;
     try {
       listOfDistinctTest =
           new TestDao(Utility.getDBConnection(this.getServletContext())).getDistinctTestList();
@@ -117,20 +119,22 @@ public class ReadyYetServlet extends HttpServlet {
                 int passed = 0;
                 if (tupleSize != -1) {
                   if (tupleSize == 1) {
-                    String resultString =
-                        new ResultDao(Utility.getDBConnection(this.getServletContext()))
-                            .getLatestResultByBrowser(testName, "[" + browserId + "]");
+                    Result temp =
+                            new ResultDao(Utility.getDBConnection(this.getServletContext()))
+                                    .getLatestResultByBrowser(testName, "[" + browserId + "]");
+                    if (temp != null) {
+                      resultString = temp.getResult();
+                    }
                     if (resultString != null) {
                       if (resultString.equalsIgnoreCase("SUCCESSFUL")) {
                         passed++;
                       }
+                      total++;
                     }
-                    total++;
                   } else {
                     for (List<Browser> browsers :
                         Utility.buildTuples(BrowserMapping.BrowserList, tupleSize)) {
                       if (browsers.contains(browser)) {
-                        String resultString = null;
                         JsonArrayBuilder idArray = Json.createArrayBuilder();
                         //browsers.remove(browser);
                         for (Browser browser1 : browsers) {
@@ -143,16 +147,19 @@ public class ReadyYetServlet extends HttpServlet {
                         }
                         JsonArray ids = idArray.build();
                         if (ids.size() == browsers.size()) {
-                          resultString =
+                          Result temp =
                                   new ResultDao(Utility.getDBConnection(this.getServletContext()))
                                           .getLatestResultByBrowser(testName, ids.toString());
+                          if (temp != null) {
+                            resultString = temp.getResult();
+                          }
                         }
                         if (resultString != null) {
                           if (resultString.equalsIgnoreCase("SUCCESSFUL")) {
                             passed++;
                           }
+                          total++;
                         }
-                        total++;
                       }
                     }
                   }
@@ -210,9 +217,12 @@ public class ReadyYetServlet extends HttpServlet {
                     if (tupleSize != -1) {
                       if (tupleSize == 1) {
                         jsonObjectBuilder.add("total", 1);
-                        String resultString =
-                            new ResultDao(Utility.getDBConnection(this.getServletContext()))
-                                .getLatestResultByBrowser(testName, "[" + browserId + "]");
+                        Result temp =
+                                new ResultDao(Utility.getDBConnection(this.getServletContext()))
+                                        .getLatestResultByBrowser(testName, "[" + browserId + "]");
+                        if (temp != null) {
+                          resultString = temp.getResult();
+                        }
                         if (resultString != null) {
                           if (resultString.equalsIgnoreCase("SUCCESSFUL")) {
                             jsonObjectBuilder.add("passed", 1);
@@ -226,7 +236,6 @@ public class ReadyYetServlet extends HttpServlet {
                         for (List<Browser> browsers :
                             Utility.buildTuples(BrowserMapping.BrowserList, tupleSize)) {
                           if (browsers.contains(browser)) {
-                            String resultString = null;
                             JsonArrayBuilder idArray = Json.createArrayBuilder();
                             //browsers.remove(browser);
                             for (Browser browser1 : browsers) {
@@ -239,9 +248,12 @@ public class ReadyYetServlet extends HttpServlet {
                             }
                             JsonArray ids = idArray.build();
                             if (ids.size() == browsers.size()) {
-                              resultString =
+                              Result temp =
                                       new ResultDao(Utility.getDBConnection(this.getServletContext()))
                                               .getLatestResultByBrowser(testName, ids.toString());
+                              if (temp != null) {
+                                resultString = temp.getResult();
+                              }
                             }
                             if (resultString != null) {
                               if (resultString.equalsIgnoreCase("SUCCESSFUL")) {
@@ -348,16 +360,25 @@ public class ReadyYetServlet extends HttpServlet {
               JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
               if (tupleSize != -1) {
                 if (tupleSize == 1) {
-                  String resultString =
-                      new ResultDao(Utility.getDBConnection(this.getServletContext()))
-                          .getLatestResultByBrowser(testName, "[" + browserId + "]");
+                  Result temp =
+                          new ResultDao(Utility.getDBConnection(this.getServletContext()))
+                                  .getLatestResultByBrowser(testName, "[" + browserId + "]");
+                  if (temp != null) {
+                    resultString = temp.getResult();
+                  }
                   if (resultString!=null){
-                    jsonObjectBuilder.add(test, resultString);
+                    //jsonObjectBuilder.add(test, resultString);
+                    if (resultString.equalsIgnoreCase("SUCCESSFUL")) {
+                      resultString = "passed";
+                    } else {
+                      resultString = "failed";
+                    }
                   } else {
-                    jsonObjectBuilder.add(test, Json.createObjectBuilder());
+                    resultString = "NA";
+                    //jsonObjectBuilder.add(test, Json.createObjectBuilder());
                   }
                   JsonObjectBuilder resultObject = Json.createObjectBuilder();
-                  resultObject.add("tests", Json.createObjectBuilder().add(test,jsonObjectBuilder));
+                  resultObject.add("tests", Json.createObjectBuilder().add(test,resultString).add("tuple", tupleSize));
                   score.add(browser.getDetailedName(), Json.createObjectBuilder().add(test,resultObject) );
                 } else {
                   int total = 0;
@@ -365,7 +386,6 @@ public class ReadyYetServlet extends HttpServlet {
                   for (List<Browser> browsers :
                       Utility.buildTuples(BrowserMapping.BrowserList, tupleSize)) {
                     if (browsers.contains(browser)) {
-                      String resultString = null;
                       JsonArrayBuilder idArray = Json.createArrayBuilder();
                       //browsers.remove(browser);
                       for (Browser browser1 : browsers) {
@@ -378,9 +398,12 @@ public class ReadyYetServlet extends HttpServlet {
                       }
                       JsonArray ids = idArray.build();
                       if (ids.size() == browsers.size()) {
-                        resultString =
+                        Result temp =
                                 new ResultDao(Utility.getDBConnection(this.getServletContext()))
                                         .getLatestResultByBrowser(testName, ids.toString());
+                        if (temp != null) {
+                          resultString = temp.getResult();
+                        }
                       }
                       if (resultString != null) {
                         if (resultString.equalsIgnoreCase("SUCCESSFUL")) {
@@ -390,9 +413,10 @@ public class ReadyYetServlet extends HttpServlet {
                       total++;
                     }
                   }
-                  jsonObjectBuilder.add(test, passed+ "/" + total);
+                  //jsonObjectBuilder.add(test, passed+ "/" + total);
                   JsonObjectBuilder resultObject = Json.createObjectBuilder();
-                  resultObject.add("tests", Json.createObjectBuilder().add(test,jsonObjectBuilder));
+                  //resultObject.add("tests", Json.createObjectBuilder().add(test,jsonObjectBuilder));
+                  resultObject.add("tests", Json.createObjectBuilder().add(test,passed+ "/" + total).add("tuple", tupleSize));
                   score.add(browser.getDetailedName(), Json.createObjectBuilder().add(test,resultObject) );
                 }
               }
