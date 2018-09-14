@@ -26,7 +26,7 @@ import java.util.Map;
  * Represent RTCRTPStreamStats, outbound and inbound, sent and received.
  */
 public class RTCRTPStreamStats extends StatObject {
-  private String ssrc, mediaType, trackId, transportId, codecId, nackCount;
+  private String ssrc, mediaType, trackId, transportId, codecId, nackCount, timestamp;
   private Map<Object, Object> statObject;
   private boolean inbound;
 
@@ -38,6 +38,7 @@ public class RTCRTPStreamStats extends StatObject {
     this.transportId = Utility.getStatByName(statObject, "parameters");
     this.nackCount = Utility.getStatByName(statObject, "nackCount");
     this.codecId = Utility.getStatByName(statObject, "codecId");
+    this.timestamp = Utility.getStatByName(statObject, "timestamp");
     this.inbound = inbound;
     this.statObject = statObject;
   }
@@ -51,7 +52,8 @@ public class RTCRTPStreamStats extends StatObject {
         .add("trackId", this.trackId)
         .add("transportId", this.transportId)
         .add("nackCount", this.nackCount)
-        .add("codecId", this.codecId);
+        .add("codecId", this.codecId)
+        .add("timestamp", this.timestamp);
     if (this.inbound)
       jsonObjectBuilder.add("packetsReceived", Utility.getStatByName(this.statObject, "packetsReceived"))
         .add("bytesReceived", Utility.getStatByName(this.statObject, "bytesReceived"))

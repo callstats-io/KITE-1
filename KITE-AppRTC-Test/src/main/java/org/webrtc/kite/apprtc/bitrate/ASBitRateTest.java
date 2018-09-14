@@ -98,8 +98,7 @@ public class ASBitRateTest extends KiteTest {
           browserResults.add(jsonObject);
         } catch (Exception e) {
           browserResults.add(null);
-          logger.error("Exception in Tester: " + e.getLocalizedMessage() + "\r\n" + e.getStackTrace());
-          logger.error("Cause Exception in Tester: " + e.getCause().getLocalizedMessage() + "\r\n" + e.getCause());
+          logger.error("Exception in Tester: " + e.getLocalizedMessage() + "\r\n" + Utility.getStackTrace(e));
         }
       }
     } catch(TimeoutException e) {

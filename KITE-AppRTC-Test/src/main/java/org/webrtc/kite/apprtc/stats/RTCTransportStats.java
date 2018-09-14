@@ -28,7 +28,7 @@ import java.util.Map;
 public class RTCTransportStats extends StatObject {
 
   private String bytesSent, bytesReceived, rtcpTransportStatsId, selectedCandidatePairId,
-    localCertificateId, remoteCertificateId;
+    localCertificateId, remoteCertificateId, timestamp;
 
   public RTCTransportStats(Map<Object, Object> statObject) {
     this.setId(Utility.getStatByName(statObject, "id"));
@@ -38,6 +38,7 @@ public class RTCTransportStats extends StatObject {
     this.remoteCertificateId = Utility.getStatByName(statObject, "remoteCertificateId");
     this.bytesSent = Utility.getStatByName(statObject, "bytesSent");
     this.bytesReceived = Utility.getStatByName(statObject, "bytesReceived");
+    this.timestamp = Utility.getStatByName(statObject, "timestamp");
   }
 
   @Override
@@ -49,7 +50,8 @@ public class RTCTransportStats extends StatObject {
         .add("localCertificateId", this.localCertificateId)
         .add("remoteCertificateId", this.remoteCertificateId)
         .add("bytesSent", this.bytesSent)
-        .add("bytesReceived", this.bytesReceived);
+        .add("bytesReceived", this.bytesReceived)
+        .add("timestamp", this.timestamp);
     return jsonObjectBuilder;
   }
 }

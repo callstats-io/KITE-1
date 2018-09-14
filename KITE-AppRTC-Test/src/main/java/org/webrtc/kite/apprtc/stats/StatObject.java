@@ -16,6 +16,7 @@
 
 package org.webrtc.kite.apprtc.stats;
 
+import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
@@ -36,15 +37,15 @@ public abstract class StatObject {
    * Returns a JsonObject representation.
    *
    * @return JsonObject
-   */
-  public JsonObject getJsonObject() {
-    return this.getJsonObjectBuilder().build();
+   *
+  private JsonObject getJsonObject() {
+    return this.getJsonObjectBuilder(). .build();
   }
 
   @Override
   public String toString() {
     return this.getJsonObject().toString();
-  }
+  }*/
 
   public String getId() {
     return id;

@@ -47,9 +47,10 @@ public class MatrixRunnerJob extends KiteJob {
       iterations = instrumentation.getScenarios().size();
 
     do {
+      String commandName = null;
       if (instrumentation != null) {
         try {
-          instrumentation.runCommand(index);
+          commandName = instrumentation.runCommand(index);
         } catch (Exception e) {
           logger.warn("Exception while running commands", e);
         }
@@ -57,6 +58,7 @@ public class MatrixRunnerJob extends KiteJob {
 
       for (TestConf testConf : (List<TestConf>) Configurator.getInstance().getConfigHandler()
           .getTestList()) {
+        testConf.setCommandName(commandName);
         try {
           if (logger.isInfoEnabled()) {
             logger.info("Running " + testConf + " ...");
@@ -77,7 +79,7 @@ public class MatrixRunnerJob extends KiteJob {
                 }
               }
               testResults += "\r\nEND OF RESULTS\r\n";
-              logger.info(testResults);
+//              logger.info(testResults);
             }
           } else {
             logger.warn("No test case was found.");

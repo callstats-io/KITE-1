@@ -19,16 +19,13 @@ package org.webrtc.kite.apprtc;
 import org.apache.log4j.Logger;
 import org.openqa.selenium.Alert;
 import org.openqa.selenium.JavascriptExecutor;
-import org.openqa.selenium.NoAlertPresentException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.remote.RemoteWebDriver;
 import org.webrtc.kite.KiteTest;
-import org.webrtc.kite.apprtc.network.IceConnectionTest;
 import org.webrtc.kite.apprtc.stats.*;
 
 import javax.json.*;
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -135,13 +132,13 @@ public class Utility {
   /**
    *
    * @param webDriver used to execute command.
-   * @param TIMEOUT Max wait time for the test.
-   * @param INTERVAL between each verification.
+   * @param timeout Max wait time for the test.
+   * @param interval between each verification.
    * @return whether Ice connection has been established.
    * @throws InterruptedException
    */
-  public static boolean checkIceConnectionState(WebDriver webDriver, int TIMEOUT, int INTERVAL) throws InterruptedException {
-    for (int i = 0; i < TIMEOUT; i += INTERVAL) {
+  public static boolean checkIceConnectionState(WebDriver webDriver, int timeout, int interval) throws InterruptedException {
+    for (int i = 0; i < timeout; i += interval) {
       String res =
         (String) ((JavascriptExecutor) webDriver).executeScript(getIceConnectionStateScript());
       if (res.equalsIgnoreCase("failed")){
@@ -149,7 +146,7 @@ public class Utility {
       } else if (res.equalsIgnoreCase("completed") || res.equalsIgnoreCase("connected")){
         return true;
       } else {
-        Thread.sleep(INTERVAL);
+        Thread.sleep(interval * 1000);
       }
     }
     return false;
@@ -162,12 +159,12 @@ public class Utility {
    * @return whether the video is actually showing
    * @throws InterruptedException
    */
-  public static boolean checkVideoDisplay(WebDriver webDriver, int TIMEOUT, int INTERVAL) throws InterruptedException {
+  public static boolean checkVideoDisplay(WebDriver webDriver, int timeout, int interval) throws InterruptedException {
     long canvasData = 0;
-    for (int i = 0; i < TIMEOUT; i += INTERVAL) {
+    for (int i = 0; i < timeout; i += interval) {
       canvasData = (Long) ((JavascriptExecutor) webDriver).executeScript(getFrameValueSum());
       if (canvasData == 0) {
-        Thread.sleep(INTERVAL);
+        Thread.sleep(interval * 1000);
       } else {
         return true;
       }
@@ -244,22 +241,21 @@ public class Utility {
    * @return JsonObjectBuilder of the stat object
    * @throws Exception
    */
-  public static JsonObjectBuilder getStatOvertime(WebDriver webDriver, int duration, int interval) throws Exception {
+  public static JsonObjectBuilder getStatOvertime(WebDriver webDriver, int duration, int interval, JsonArray selectedStats) throws Exception {
     Map<String, Object> statMap = new HashMap<String, Object>();
     for (int timer = 0; timer < duration; timer += interval) {
+      Thread.sleep(interval * 1000);
       Object stats = getStatOnce(webDriver);
       if (timer == 0) {
         statMap.put("stats", new ArrayList<>());
-
         Object offer = getSDPMessage(webDriver, "offer");
         Object answer = getSDPMessage(webDriver,"answer");
         statMap.put("offer", offer);
         statMap.put("answer", answer);
       }
-      List<Object> tmp = (List) statMap.get("stats");
-      tmp.add(stats);
+      ((List<Object>) statMap.get("stats")).add(stats);
     }
-    return buildClientStatObject(statMap);
+    return buildClientStatObject(statMap, selectedStats);
   }
 
 
@@ -271,9 +267,12 @@ public class Utility {
    * @return true if both the provided objects are not null.
    */
   public static String getStatByName(Map<Object, Object> statObject, String statName) {
-    if (statObject.get(statName) != null)
-      return statObject.get(statName).toString();
-    return "NA";
+    String str = statObject.get(statName) != null ?  statObject.get(statName).toString() : "NA";
+    if ("timestamp".equals(statName) && str.contains("E")) {
+        //format 1.536834943435905E12 to 1536834943435905
+        str = "1" + str.substring(str.indexOf(".") + 1, str.indexOf("E"));
+    }
+    return str;
   }
 
 
@@ -284,15 +283,15 @@ public class Utility {
    * @param clientStats array of data sent back from test
    * @return JsonObjectBuilder.
    */
-  public static JsonObjectBuilder buildClientStatObject(Object clientStats) {
+  public static JsonObjectBuilder buildClientStatObject(Map<String, Object> clientStats, JsonArray selectedStats) {
     try {
       JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
-      Map<String, Object> clientStatMap = (Map<String, Object>) clientStats;
+      Map<String, Object> clientStatMap = clientStats;
 
       List<Object> clientStatArray = (ArrayList) clientStatMap.get("stats");
       JsonArrayBuilder jsonclientStatArray = Json.createArrayBuilder();
       for (Object stats : clientStatArray) {
-        JsonObjectBuilder jsonStatObjectBuilder = buildSingleStatObject(stats);
+        JsonObjectBuilder jsonStatObjectBuilder = buildSingleStatObject(stats, selectedStats);
         jsonclientStatArray.add(jsonStatObjectBuilder);
       }
 
@@ -303,7 +302,7 @@ public class Utility {
               .add("answer", new SDP(sdpAnswer).getJsonObjectBuilder());
 
       jsonObjectBuilder.add("sdp", sdpObjectBuilder)
-              .add("stats", jsonclientStatArray);
+              .add("statsArray", jsonclientStatArray);
 
       return jsonObjectBuilder;
     } catch (ClassCastException e) {
@@ -322,6 +321,20 @@ public class Utility {
    * @return JsonObjectBuilder.
    */
   public static JsonObjectBuilder buildSingleStatObject(Object statArray) {
+    return buildSingleStatObject(statArray, null);
+  }
+
+
+
+  /**
+   * Create a JsonObjectBuilder Object to eventually build a Json object
+   * from data obtained via tests.
+   *
+   * @param statArray array of data sent back from test
+   * @param statsSelection ArrayList<String> of the selected stats
+   * @return JsonObjectBuilder.
+   */
+  public static JsonObjectBuilder buildSingleStatObject(Object statArray, JsonArray statsSelection) {
     JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
     Map<String, List<StatObject>> statObjectMap = new HashMap<>();
     if (statArray != null) {
@@ -329,63 +342,78 @@ public class Utility {
         if (map != null) {
           Map<Object, Object> statMap = (Map<Object, Object>) map;
           String type = (String) statMap.get("type");
-          StatObject statObject = null;
-          switch (type) {
-            case "codec": {
-              statObject = new RTCCodecStats(statMap);
-              break;
+          if (statsSelection == null || statsSelection.toString().contains(type)) {
+            StatObject statObject = null;
+            switch (type) {
+              case "codec":
+                {
+                  statObject = new RTCCodecStats(statMap);
+                  break;
+                }
+              case "track":
+                {
+                  statObject = new RTCMediaStreamTrackStats(statMap);
+                  break;
+                }
+              case "stream":
+                {
+                  statObject = new RTCMediaStreamStats(statMap);
+                  break;
+                }
+              case "inbound-rtp":
+                {
+                  statObject = new RTCRTPStreamStats(statMap, true);
+                  break;
+                }
+              case "outbound-rtp":
+                {
+                  statObject = new RTCRTPStreamStats(statMap, false);
+                  break;
+                }
+              case "peer-connection":
+                {
+                  statObject = new RTCPeerConnectionStats(statMap);
+                  break;
+                }
+              case "transport":
+                {
+                  statObject = new RTCTransportStats(statMap);
+                  break;
+                }
+              case "candidate-pair":
+                {
+                  statObject = new RTCIceCandidatePairStats(statMap);
+                  break;
+                }
+              case "remote-candidate":
+                {
+                  statObject = new RTCIceCandidateStats(statMap);
+                  break;
+                }
+              case "local-candidate":
+                {
+                  statObject = new RTCIceCandidateStats(statMap);
+                  break;
+                }
             }
-            case "track": {
-              statObject = new RTCMediaStreamTrackStats(statMap);
-              break;
+            if (statObject != null) {
+              if (statObjectMap.get(type) == null) {
+                statObjectMap.put(type, new ArrayList<StatObject>());
+              }
+              statObjectMap.get(type).add(statObject);
             }
-            case "stream": {
-              statObject = new RTCMediaStreamStats(statMap);
-              break;
-            }
-            case "inbound-rtp": {
-              statObject = new RTCRTPStreamStats(statMap, true);
-              break;
-            }
-            case "outbound-rtp": {
-              statObject = new RTCRTPStreamStats(statMap, false);
-              break;
-            }
-            case "peer-connection": {
-              statObject = new RTCPeerConnectionStats(statMap);
-              break;
-            }
-            case "transport": {
-              statObject = new RTCTransportStats(statMap);
-              break;
-            }
-            case "candidate-pair": {
-              statObject = new RTCIceCandidatePairStats(statMap);
-              break;
-            }
-            case "remote-candidate": {
-              statObject = new RTCIceCandidateStats(statMap);
-              break;
-            }
-            case "local-candidate": {
-              statObject = new RTCIceCandidateStats(statMap);
-              break;
-            }
-          }
-          if (statObject != null) {
-            if (statObjectMap.get(type) == null) {
-              statObjectMap.put(type, new ArrayList<StatObject>());
-            }
-            statObjectMap.get(type).add(statObject);
           }
         }
       }
     }
     if (!statObjectMap.isEmpty()) {
       for (String type : statObjectMap.keySet()) {
-        JsonObjectBuilder tmp = Json.createObjectBuilder();
-        for (StatObject stat : statObjectMap.get(type))
+//        JsonArrayBuilder tmp = Json.createArrayBuilder();
+          JsonObjectBuilder tmp = Json.createObjectBuilder();
+        for (StatObject stat : statObjectMap.get(type)) {
           tmp.add(stat.getId(), stat.getJsonObjectBuilder());
+//          tmp.add(/*stat.getId(),*/ stat.getJsonObjectBuilder());
+        }
         jsonObjectBuilder.add(type, tmp);
       }
     }
@@ -464,4 +492,17 @@ public class Utility {
     }
     return alertMsg;
   }
+
+  /**
+   * Returns stack trace of the given exception.
+   *
+   * @param e Exception
+   * @return string representation of e.printStackTrace()
+   */
+  public static String getStackTrace(Throwable e) {
+    Writer writer = new StringWriter();
+    e.printStackTrace(new PrintWriter(writer));
+    return writer.toString();
+  }
+
 }

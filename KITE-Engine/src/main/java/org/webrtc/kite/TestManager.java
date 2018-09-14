@@ -289,7 +289,7 @@ public class TestManager implements Callable<Object> {
     if (performTest) {
       try {
         KiteTest test = (KiteTest) Class.forName(this.testConf.getTestImpl()).newInstance();
-
+        test.setCommandName(this.testConf.getCommandName());
         test.setWebDriverList(this.webDriverList);
         test.setPayload(this.testConf.getPayload());
         String commandName = Configurator.getInstance().getCommandName();

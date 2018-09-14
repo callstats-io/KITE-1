@@ -29,7 +29,7 @@ import java.util.Map;
 public class RTCIceCandidatePairStats extends StatObject {
 
   private String transportId, localCandidateId, remoteCandidateId, state, priority, nominated,
-    bytesSent, bytesReceived, totalRoundTripTime, currentRoundTripTime;
+    bytesSent, bytesReceived, totalRoundTripTime, currentRoundTripTime, timestamp;
 
   public RTCIceCandidatePairStats(Map<Object, Object> statObject) {
     this.setId(Utility.getStatByName(statObject, "id"));
@@ -43,6 +43,7 @@ public class RTCIceCandidatePairStats extends StatObject {
     this.bytesReceived = Utility.getStatByName(statObject, "bytesReceived");
     this.totalRoundTripTime = Utility.getStatByName(statObject, "totalRoundTripTime");
     this.currentRoundTripTime = Utility.getStatByName(statObject, "currentRoundTripTime");
+    this.timestamp = Utility.getStatByName(statObject, "timestamp");
   }
 
   @Override
@@ -58,7 +59,8 @@ public class RTCIceCandidatePairStats extends StatObject {
         .add("bytesSent", this.bytesSent)
         .add("currentRoundTripTime", this.currentRoundTripTime)
         .add("totalRoundTripTime", this.totalRoundTripTime)
-        .add("bytesReceived", this.bytesReceived);
+        .add("bytesReceived", this.bytesReceived)
+        .add("timestamp", this.timestamp);
     return jsonObjectBuilder;
   }
 }

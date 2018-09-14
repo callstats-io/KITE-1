@@ -1,0 +1,86 @@
+{
+  "instances": [
+    {
+      "_id": "1",
+      "name": "Alice Gateway",
+      "ipAddress": "18.213.124.70",
+      "username": "ec2-user",
+      "keyFilePath": "file://~/.ssh/callstatsKey.pem"
+    },
+    {
+      "_id": "2",
+      "name": "Bob Gateway",
+      "ipAddress": "54.210.8.89",
+      "username": "ec2-user",
+      "keyFilePath": "file://~/.ssh/callstatsKey.pem"
+    },
+    {
+      "_id": "3",
+      "name": "SFU Gateway",
+      "ipAddress": "54.84.174.228",
+      "username": "ec2-user",
+      "keyFilePath": "file://~/.ssh/callstatsKey.pem"
+    }
+  ],
+  "scenarios": [
+    {
+      "instanceId": "1",
+      "name": "Baseline test",
+      "interfaces": [
+        "eth1"
+      ],
+      "latency": 1
+    },
+    {
+      "instanceId": "1",
+      "name": "BW limit to 1000kbps on eth1 and eth2",
+      "interfaces": [
+        "eth1", "eth2"
+      ],
+      "latency": 10,
+      "bandwidth": 1000
+    },
+    {
+      "instanceId": "1",
+      "name": "20% packet loss on eth1 and eth2",
+      "interfaces": [
+        "eth1", "eth2"
+      ],
+      "packetLoss": 20
+    },
+    {
+      "instanceId": "1",
+      "name": "200ms latency on eth1 and eth2",
+      "interfaces": [
+        "eth1", "eth2"
+      ],
+      "latency": 200
+    },
+    {
+      "instanceId": "2",
+      "name": "600ms latency on eth1",
+      "interfaces": [
+        "eth1"
+      ],
+      "latency": 600
+    },
+    {
+      "instanceId": "2",
+      "name": "100ms latency and 50ms jitter on eth1 and eth2",
+      "interfaces": [
+        "eth1", "eth2"
+      ],
+      "jitter": 50,
+      "latency": 100
+    },
+    {
+      "instanceId": "2",
+      "name": "20% packet corruption with 50% correlation on eth1",
+      "interfaces": [
+        "eth1"
+      ],
+      "correlation": 50,
+      "corruption": 20
+    }
+  ]
+}

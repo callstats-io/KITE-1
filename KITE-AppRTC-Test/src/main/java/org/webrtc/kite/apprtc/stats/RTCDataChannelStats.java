@@ -28,7 +28,7 @@ import java.util.Map;
  */
 public class RTCDataChannelStats extends StatObject {
 
-  private String label, protocol, datachannelId, state, messagesSent, bytesSent, messagesReceived, bytesReceived;
+  private String label, protocol, datachannelId, state, messagesSent, bytesSent, messagesReceived, bytesReceived, timestamp;
 
 
   public RTCDataChannelStats(Map<Object, Object> statObject) {
@@ -41,6 +41,7 @@ public class RTCDataChannelStats extends StatObject {
     this.bytesSent = Utility.getStatByName(statObject, "bytesSent");
     this.messagesReceived = Utility.getStatByName(statObject, "messagesReceived");
     this.bytesReceived = Utility.getStatByName(statObject, "bytesReceived");
+    this.timestamp = Utility.getStatByName(statObject, "timestamp");
   }
 
   @Override
@@ -54,7 +55,8 @@ public class RTCDataChannelStats extends StatObject {
         .add("messagesSent", this.messagesSent)
         .add("bytesSent", this.bytesSent)
         .add("messagesReceived", this.messagesReceived)
-        .add("bytesReceived", this.bytesReceived);
+        .add("bytesReceived", this.bytesReceived)
+        .add("timestamp", this.timestamp);
     return jsonObjectBuilder;
   }
 }

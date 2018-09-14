@@ -4,7 +4,7 @@
   "remotes": [
     {
       "type": "local",
-      "remoteAddress": "http://192.168.2.2:4445/wd/hub"
+      "remoteAddress": "http://192.168.2.33:4444/wd/hub"
     }
   ],
   "tests": [

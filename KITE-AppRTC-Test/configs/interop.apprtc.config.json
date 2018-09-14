@@ -1,0 +1,36 @@
+{
+  "type": 1,
+  "name": "interop.jitsi.config.json",
+  "instrumentUrl": "file:///GitHub/KITE-Manu-NW-Inst/KITE-AppRTC-Test/configs/instrumentation.json",
+  "remotes": [
+    {
+      "type": "local",
+      "remoteAddress": "http://18.232.249.40:4444/wd/hub"
+    }
+  ],
+  "tests": [
+    {
+      "name": "NW Instrumentation Test",
+      "tupleSize": 2,
+      "description":"This test verifies the ICEConnection and collect stats via getStats",
+      "testImpl": "org.webrtc.kite.apprtc.network.IceConnectionTest",
+      "payload": {
+        "printToCSV": true,
+        "printToJson": true,
+        "statsCollectionTime": 16,
+        "statsCollectionInterval": 8,
+        "selectedStats": ["inbound-rtp", "outbound-rtp", "candidate-pair"]
+      }
+    }
+  ],
+  "browsers": [
+    {
+      "browserName": "chrome",
+      "version": "67",
+      "platform": "LINUX",
+      "fakeMediaFile": "/home/ubuntu/e-dv548_lwe08_christa_casebeer_003.y4m",
+      "fakeMediaAudio": "/home/ubuntu/e-dv548_lwe08_christa_casebeer_003.wav",
+      "headless": true
+    }
+  ]
+}

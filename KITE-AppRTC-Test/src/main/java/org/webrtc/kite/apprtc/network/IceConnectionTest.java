@@ -21,9 +21,11 @@ import org.openqa.selenium.*;
 import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.remote.RemoteWebDriver;
 import org.webrtc.kite.KiteTest;
+import org.webrtc.kite.apprtc.StatsUtils;
 import org.webrtc.kite.apprtc.Utility;
 
 import javax.json.Json;
+import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import java.util.ArrayList;
@@ -63,6 +65,40 @@ public class IceConnectionTest extends KiteTest {
   private final static String RESULT_SUCCESSFUL = "SUCCESSFUL";
   private final static String RESULT_FAILED = "FAILED";
 
+  private boolean printToCSV = false;
+  private boolean printToJson = false;
+
+  private int timeout = 60;
+  private int statsCollectionTime = 10;
+  private int interval = 1;
+  private int statsCollectionInterval = 1;
+  private JsonArray selectedStats = null;
+  private String commandName = "";
+
+  /**
+   * Process the payload from the json config file.
+   */
+  private void payloadHandling() {
+    JsonObject jsonPayload = (JsonObject) this.getPayload();
+    if (jsonPayload != null) {
+      printToJson = jsonPayload.getBoolean("printToJson", printToJson);
+      printToCSV = jsonPayload.getBoolean("printToCSV", printToCSV);
+      timeout = jsonPayload.getInt("timeout", timeout);
+      interval = jsonPayload.getInt("interval", interval);
+      statsCollectionTime = jsonPayload.getInt("statsCollectionTime", statsCollectionTime);
+      statsCollectionInterval = jsonPayload.getInt("statsCollectionInterval", statsCollectionInterval);
+      selectedStats = jsonPayload.getJsonArray("selectedStats");
+    }
+  }
+
+  public void setPrintToCSV(boolean printToCSV) {
+    this.printToCSV = printToCSV;
+  }
+
+  public void setPrintToJson(boolean printToJson) {
+    this.printToJson = printToJson;
+  }
+
   /**
    * Opens the APPRTC_URL and clicks 'confirm-join-button'.
    */
@@ -71,7 +107,7 @@ public class IceConnectionTest extends KiteTest {
     JsonObjectBuilder stats = Json.createObjectBuilder();
     List<JsonObject> browserResults = new ArrayList<>();
     List<String> resultList = new ArrayList<>();
-    String commandName = this.getCommandName();
+    this.commandName = this.getCommandName() != null ? this.getCommandName() : "";
 
     List<WebDriver> webDriverList = this.getWebDriverList();
 
@@ -80,7 +116,7 @@ public class IceConnectionTest extends KiteTest {
 
 
     if (commandName != null) {
-      logger.error("NW Instrumentation command: " + commandName);
+      logger.error("NW Instrumentation command: " + this.commandName);
     }
     List<Tester> testerList = new ArrayList<>();
     for (WebDriver webDriver : webDriverList) {
@@ -98,8 +134,7 @@ public class IceConnectionTest extends KiteTest {
           browserResults.add(jsonObject);
         } catch (Exception e) {
           browserResults.add(null);
-          logger.error("Exception in Tester: " + e.getLocalizedMessage() + "\r\n" + e.getStackTrace());
-          logger.error("Cause Exception in Tester: " + e.getCause().getLocalizedMessage() + "\r\n" + e.getCause());
+          logger.error("Exception in Tester: " + e.getLocalizedMessage() + "\r\n" + Utility.getStackTrace(e));
         }
       }
     } catch(TimeoutException e) {
@@ -115,7 +150,7 @@ public class IceConnectionTest extends KiteTest {
         resultList.add(browserResult.getString("result", RESULT_FAILED));
         String browser =  browserResult.getString("browser", "client_"+(i+1));
         browser = (i+1) + "_" + browser;
-        stats.add(browser,browserResult.getJsonObject("stats"));
+        stats.add(browser, browserResult.getJsonObject("stats"));
       }
     }
     if (resultList.contains(RESULT_FAILED)){
@@ -123,13 +158,14 @@ public class IceConnectionTest extends KiteTest {
     } else {
       res.add("result", RESULT_SUCCESSFUL);
     }
-    res.add("stats", stats);
+    res.add("getStats", stats);
     return res.build();
   }
 
 
   @Override
   public Object testScript() throws Exception {
+    payloadHandling();
     JsonObject res = this.takeAction();
     return res.toString();
   }
@@ -137,10 +173,7 @@ public class IceConnectionTest extends KiteTest {
 
 
 
-  private class Tester implements Callable<JsonObject>{
-    private final static int TIMEOUT = 60000;
-    private final static int OVERTIME = 10000;
-    private final static int INTERVAL = 1000;
+  private class Tester implements Callable<JsonObject> {
     private final WebDriver webDriver;
     private String alertMsg, browser, result;
     private String message = "No problem detected.";
@@ -160,10 +193,10 @@ public class IceConnectionTest extends KiteTest {
       alertMsg = alertHandling(webDriver);
       webDriver.findElement(By.id("confirm-join-button")).click();
 
-      everythingOK = Utility.checkIceConnectionState(webDriver, TIMEOUT, INTERVAL);
+      everythingOK = Utility.checkIceConnectionState(webDriver, timeout, interval);
 
       if (everythingOK){
-        everythingOK = Utility.checkVideoDisplay(webDriver, TIMEOUT, INTERVAL);
+        everythingOK = Utility.checkVideoDisplay(webDriver, timeout, interval);
         if (!everythingOK){
           message = "Video not playing";
           result = RESULT_FAILED;
@@ -174,9 +207,25 @@ public class IceConnectionTest extends KiteTest {
         message = "Failed to establish ICE connection";
         result = RESULT_FAILED;
       }
+      //wait 2s before getting stats
+      stats = Utility.getStatOvertime(webDriver, statsCollectionTime, statsCollectionInterval, selectedStats);
 
-      stats = Utility.getStatOvertime(webDriver,OVERTIME,INTERVAL);
-      return Utility.developResult(browser, result, stats, message, alertMsg, Utility.getLog(webDriver));
+
+      JsonObject jsonObj =
+              Utility.developResult(browser, result, stats, message, alertMsg, Utility.getLog(webDriver));
+      String jsonStr = jsonObj.toString();
+      StatsUtils ts = StatsUtils.getInstance("");
+      if (printToJson) ts.printJsonTofile("verify", jsonStr, "results/");
+      if (true || printToCSV) {
+        JsonObjectBuilder jsonBuilder = Json.createObjectBuilder();
+        jsonBuilder.add("browser", browser);
+        jsonBuilder.add("commandName", commandName);
+        jsonBuilder.addAll(StatsUtils.extractStats(jsonObj));
+        ts.println(jsonBuilder.build(), "results/");
+      }
+      return jsonObj;
+
+
     }
   }
 

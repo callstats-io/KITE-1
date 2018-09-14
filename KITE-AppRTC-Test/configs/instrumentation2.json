@@ -1,0 +1,21 @@
+{
+  "instances": [
+    {
+      "_id": "1",
+      "name": "Alice Gateway",
+      "ipAddress": "18.213.124.70",
+      "username": "ec2-user",
+      "keyFilePath": "file://~/.ssh/callstatsKey.pem"
+    }
+  ],
+  "scenarios": [
+    {
+      "instanceId": "1",
+      "name": "Baseline test",
+      "interfaces": [
+        "eth1"
+      ],
+      "latency": 1
+    }
+  ]
+}

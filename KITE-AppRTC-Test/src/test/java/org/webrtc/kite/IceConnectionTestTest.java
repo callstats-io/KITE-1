@@ -40,7 +40,7 @@ public class IceConnectionTestTest extends TestCase {
     final Browser browser2 = new Browser("chrome");
     browser2.setRemoteAddress(SELENIUM_SERVER_URL);
 
-    webDriverList.add(WebDriverFactory.createWebDriver(browser1, TEST_NAME));
+    webDriverList.add(WebDriverFactory.createWebDriver(browser2, TEST_NAME));
     webDriverList.add(WebDriverFactory.createWebDriver(browser2, TEST_NAME));
   }
 
@@ -55,7 +55,8 @@ public class IceConnectionTestTest extends TestCase {
   }
 
   public void testTestScript() throws Exception {
-    KiteTest test = new IceConnectionTest();
+    IceConnectionTest test = new IceConnectionTest();
+    test.setPrintToJson(true);
     test.setWebDriverList(this.webDriverList);
     System.out.println(test.testScript());
   }

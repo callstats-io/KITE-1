@@ -30,7 +30,7 @@ import java.util.Map;
 public class RTCMediaStreamTrackStats extends StatObject {
   private String trackIdentifier, remoteSource, ended, detached,
     frameWidth, frameHeight, framesPerSecond, framesSent, framesReceived,
-    framesDecoded, framesDropped, framesCorrupted, audioLevel;
+    framesDecoded, framesDropped, framesCorrupted, audioLevel, timestamp;
 
   public RTCMediaStreamTrackStats(Map<Object, Object> statObject) {
     this.setId(Utility.getStatByName(statObject, "id"));
@@ -47,6 +47,7 @@ public class RTCMediaStreamTrackStats extends StatObject {
     this.framesDropped = Utility.getStatByName(statObject, "framesDropped");
     this.framesCorrupted = Utility.getStatByName(statObject, "framesCorrupted");
     this.audioLevel = Utility.getStatByName(statObject, "audioLevel");
+    this.timestamp = Utility.getStatByName(statObject, "timestamp");
 
   }
 
@@ -67,7 +68,8 @@ public class RTCMediaStreamTrackStats extends StatObject {
         .add("framesDecoded", this.framesDecoded)
         .add("framesDropped", this.framesDropped)
         .add("framesCorrupted", this.framesCorrupted)
-        .add("audioLevel", this.audioLevel);
+        .add("audioLevel", this.audioLevel)
+        .add("timestamp", this.timestamp);
 
     return jsonObjectBuilder;
   }

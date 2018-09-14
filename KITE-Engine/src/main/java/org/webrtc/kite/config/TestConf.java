@@ -43,6 +43,7 @@ public class TestConf extends Test {
   // Optional
   private int noOfThreads;
   private int maxRetryCount;
+  private String commandName;
 
   /**
    * Constructs a new TestConf with the given callback url and JsonObject.
@@ -140,6 +141,14 @@ public class TestConf extends Test {
 
   @Override public JsonObjectBuilder getJsonObjectBuilderForResult() {
     return super.getJsonObjectBuilderForResult().add("tupleSize", this.tupleSize);
+  }
+
+  public String getCommandName() {
+    return commandName;
+  }
+
+  public void setCommandName(String commandName) {
+    this.commandName = commandName;
   }
 
 }
