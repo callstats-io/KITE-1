@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.PrintWriter;
 import java.io.StringReader;
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -307,7 +308,7 @@ public class StatsUtils {
 
 
   private static final String[] candidatePairStats = {"bytesSent", "bytesReceived", "currentRoundTripTime", "totalRoundTripTime", "timestamp"};
-  private static final String[] inboundStats = {"bytesReceived", "packetsLost", "jitter", "timestamp"};
+  private static final String[] inboundStats = {"bytesReceived", "packetsReceived", "packetsLost", "jitter", "timestamp"};
   private static final String[] outboundStats = {"bytesSent", "timestamp"};
 
   /**
@@ -338,19 +339,20 @@ public class StatsUtils {
     }
     JsonObject result = mainBuilder.build();
     JsonObjectBuilder csvBuilder = Json.createObjectBuilder();
-    csvBuilder.add("totalRoundTripTime", computeRoundTripTime(result, noStats));
-    csvBuilder.add("totalBytesReceived", totalBytes(result, noStats, "Received"));
-    csvBuilder.add("totalBytesSent", totalBytes(result, noStats, "Sent"));
-    csvBuilder.add("avgSentBitrate", computeBitrate(result, noStats, "Sent", "candidate-pair"));
-    csvBuilder.add("avgReceivedBitrate", computeBitrate(result, noStats, "Received", "candidate-pair"));
-    csvBuilder.add("inboundAudioBitrate", computeBitrate(result, noStats, "in", "audio"));
-    csvBuilder.add("inboundVideoBitrate", computeBitrate(result, noStats, "in", "video"));
-    csvBuilder.add("outboundAudioBitrate", computeBitrate(result, noStats, "out", "audio"));
-    csvBuilder.add("outboundVideoBitrate", computeBitrate(result, noStats, "out", "video"));
-    csvBuilder.add("audioJitter", computeAudioJitter(result, noStats));
-//    csvBuilder.add("audioPacketsLoss", computePacketsLost(result, noStats, "in", "audio"));
-//    csvBuilder.add("videoPacketsLoss", computePacketsLost(result, noStats, "in", "video"));
-    csvBuilder.add("stats", result);
+    csvBuilder.add("totalRoundTripTime (ms)", computeRoundTripTime(result, noStats));
+    csvBuilder.add("totalBytesReceived (Bytes)", totalBytes(result, noStats, "Received"));
+    csvBuilder.add("totalBytesSent (Bytes)", totalBytes(result, noStats, "Sent"));
+    csvBuilder.add("avgSentBitrate (bps)", computeBitrate(result, noStats, "Sent", "candidate-pair"));
+    csvBuilder.add("avgReceivedBitrate (bps)", computeBitrate(result, noStats, "Received", "candidate-pair"));
+    csvBuilder.add("inboundAudioBitrate (bps)", computeBitrate(result, noStats, "in", "audio"));
+    csvBuilder.add("inboundVideoBitrate (bps)", computeBitrate(result, noStats, "in", "video"));
+    csvBuilder.add("outboundAudioBitrate (bps)", computeBitrate(result, noStats, "out", "audio"));
+    csvBuilder.add("outboundVideoBitrate (bps)", computeBitrate(result, noStats, "out", "video"));
+    csvBuilder.add("audioJitter (ms)", computeAudioJitter(result, noStats));
+    csvBuilder.add("audioPacketsLoss (%)", computePacketsLoss(result, noStats, "audio"));
+    csvBuilder.add("videoPacketsLoss (%)", computePacketsLoss(result, noStats, "video"));
+    //uncomment the following line to add the detailed stats to the CSV
+//    csvBuilder.add("stats", result);
     return csvBuilder;
   }
 
@@ -397,7 +399,7 @@ public class StatsUtils {
     }
     if (tsEnd != tsStart) {
       long timediff = (tsEnd - tsStart);
-      avgBitrate = (8000 * (bytesEnd - bytesStart)) / timediff;
+      avgBitrate = (8000000 * (bytesEnd - bytesStart)) / timediff;
       avgBitrate = (avgBitrate < 0) ? avgBitrate * -1 : avgBitrate;
       return "" + (avgBitrate);
     }
@@ -489,6 +491,45 @@ public class StatsUtils {
     return "";
   }
 
+  /**
+   * Computes the packet losses as a % packetLost/total packets
+   *
+   * @param jsonObject object containing the list getStats result.
+   * @param noStats how many stats in jsonObject
+   * @param mediaType "audio" or "video"
+   * @return the packet losses (% packetLost/total packets)
+   */
+  private static String computePacketsLoss(JsonObject jsonObject, int noStats, String mediaType) {
+    if (noStats < 1) return ""; // min one stats
+    try {
+      JsonObject myObject = jsonObject.getJsonObject("inbound-" + mediaType + "_" + (noStats - 1));
+      if (myObject != null) {
+        String s = myObject.getString("packetsReceived");
+        String l = myObject.getString("packetsLost");
+        if (s != null && !"NA".equals(s) && isLong(s)
+                && l != null && !"NA".equals(l) && isLong(l)) {
+          long packetsLost = Long.parseLong(l);
+          long totalPackets = Long.parseLong(s) + packetsLost;
+          if (totalPackets > 0) {
+            double packetLoss = packetsLost / totalPackets;
+            return "" + (new DecimalFormat("#0.000").format(packetLoss));
+          }
+        } else {
+            logger.error(
+                    "computePacketsLoss  \r\n ---------------\r\n"
+                            + myObject.toString()
+                            + "\r\n ---------------\r\n");
+        }
+      } else {
+          logger.error(
+                  "computePacketsLoss  my object is null " + ("inbound-" + mediaType + "_" + (noStats - 1)));
+
+      }
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+    return "";
+  }
 
   /**
    * Computes the total bytes sent or received by the candidate
