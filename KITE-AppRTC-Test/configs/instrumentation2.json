@@ -3,7 +3,7 @@
     {
       "_id": "1",
       "name": "Alice Gateway",
-      "ipAddress": "18.213.124.70",
+      "ipAddress": "18.213.37.238",
       "username": "ec2-user",
       "keyFilePath": "file://~/.ssh/callstatsKey.pem"
     }

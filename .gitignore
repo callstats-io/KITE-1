@@ -9,3 +9,4 @@ KITE-Engine/src/main/java/org/webrtc/kite/IceConnectionTest.java
 *package-lock.json
 node_modules
 results
+/KITE-AppRTC-Test/screenshots

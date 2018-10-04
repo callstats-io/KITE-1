@@ -16,10 +16,9 @@
 
 package org.webrtc.kite.apprtc;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
-import org.openqa.selenium.Alert;
-import org.openqa.selenium.JavascriptExecutor;
-import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.*;
 import org.openqa.selenium.remote.RemoteWebDriver;
 import org.webrtc.kite.KiteTest;
 import org.webrtc.kite.apprtc.stats.*;
@@ -504,5 +503,36 @@ public class Utility {
     e.printStackTrace(new PrintWriter(writer));
     return writer.toString();
   }
+
+
+
+
+    /**
+     * Saves a screenshot of the webdriver/browser under "report/" + filename + ".png"
+     *
+     * @param driver the webdriver
+     * @param filename the name of the file without path ("report/") and extension (" .png")
+     * @return true if successful, false otherwise
+     */
+    public static boolean takeScreenshot(WebDriver driver, String path, String filename) {
+        try {
+            File scrFile = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
+            File dir = new File(path);
+            if (!dir.isDirectory()) {
+                dir.mkdirs();
+            }
+            String s = path + filename.replaceAll("[^A-Za-z0-9()\\[\\]]", "") + ".png";
+            FileUtils.copyFile(scrFile, new File(s));
+            logger.info(s);
+            return true;
+        } catch (Exception e) {
+            logger.error(
+                    "Exception in takeScreenshot: "
+                            + e.getLocalizedMessage()
+                            + "\r\n"
+                            + getStackTrace(e));
+            return false;
+        }
+    }
 
 }

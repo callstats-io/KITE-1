@@ -3,21 +3,21 @@
     {
       "_id": "1",
       "name": "Alice Gateway",
-      "ipAddress": "18.213.124.70",
+      "ipAddress": "18.213.37.238",
       "username": "ec2-user",
       "keyFilePath": "file://~/.ssh/callstatsKey.pem"
     },
     {
       "_id": "2",
       "name": "Bob Gateway",
-      "ipAddress": "54.210.8.89",
+      "ipAddress": "34.192.44.153",
       "username": "ec2-user",
       "keyFilePath": "file://~/.ssh/callstatsKey.pem"
     },
     {
       "_id": "3",
       "name": "SFU Gateway",
-      "ipAddress": "54.84.174.228",
+      "ipAddress": "107.22.55.241",
       "username": "ec2-user",
       "keyFilePath": "file://~/.ssh/callstatsKey.pem"
     }

@@ -28,7 +28,9 @@ import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.*;
@@ -99,6 +101,16 @@ public class IceConnectionTest extends KiteTest {
     this.printToJson = printToJson;
   }
 
+  private String getName(int i) {
+    switch(i) {
+      case 0:
+        return "Alice";
+      case 1:
+        return "Bob";
+    }
+    return "User_" + (i+1);
+  }
+
   /**
    * Opens the APPRTC_URL and clicks 'confirm-join-button'.
    */
@@ -116,12 +128,14 @@ public class IceConnectionTest extends KiteTest {
 
 
     if (commandName != null) {
-      logger.error("NW Instrumentation command: " + this.commandName);
+      logger.info("NW Instrumentation command: " + this.commandName);
     }
     List<Tester> testerList = new ArrayList<>();
+    int j = 0;
     for (WebDriver webDriver : webDriverList) {
       webDriver.get(APPRTC_URL + channel);
-      testerList.add(new Tester(webDriver));
+      testerList.add(new Tester(webDriver, getName(j)));
+      j++;
     }
     try {
       ExecutorService executorService = Executors.newFixedThreadPool(webDriverList.size());
@@ -177,16 +191,21 @@ public class IceConnectionTest extends KiteTest {
     private final WebDriver webDriver;
     private String alertMsg, browser, result;
     private String message = "No problem detected.";
+    private final String name;
     JsonObjectBuilder stats = Json.createObjectBuilder();
 
-    public Tester(WebDriver webDriver){
+    public Tester(WebDriver webDriver, String name){
       this.webDriver = webDriver;
+      this.name = name;
       Capabilities capabilities = ((RemoteWebDriver) this.webDriver).getCapabilities();
       this.browser = capabilities.getBrowserName() + "_" + capabilities.getVersion() +"_" + capabilities.getPlatform();
     }
 
     @Override
     public JsonObject call() throws Exception {
+        //XXX to replace with implicit wait
+      Thread.sleep(5000);
+
       JsonObjectBuilder res = Json.createObjectBuilder();
       res.add("browser", browser);
       boolean everythingOK;
@@ -210,17 +229,23 @@ public class IceConnectionTest extends KiteTest {
       //wait 2s before getting stats
       stats = Utility.getStatOvertime(webDriver, statsCollectionTime, statsCollectionInterval, selectedStats);
 
+      Utility.takeScreenshot(webDriver, "screenshots/",
+              new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date()) + "_ICE_" + name + commandName);
 
       JsonObject jsonObj =
               Utility.developResult(browser, result, stats, message, alertMsg, Utility.getLog(webDriver));
       String jsonStr = jsonObj.toString();
       StatsUtils ts = StatsUtils.getInstance("");
-      if (printToJson) ts.printJsonTofile("verify", jsonStr, "results/");
+      if (printToJson) ts.printJsonTofile("apprtc_" + name + commandName, jsonStr, "results/");
       if (true || printToCSV) {
         JsonObjectBuilder jsonBuilder = Json.createObjectBuilder();
         jsonBuilder.add("browser", browser);
         jsonBuilder.add("commandName", commandName);
-        jsonBuilder.addAll(StatsUtils.extractStats(jsonObj));
+        jsonBuilder.add("name", name);
+        JsonObjectBuilder jbuilder = StatsUtils.extractStats(jsonObj);
+        if (jbuilder != null) {
+          jsonBuilder.addAll(jbuilder);
+        }
         ts.println(jsonBuilder.build(), "results/");
       }
       return jsonObj;

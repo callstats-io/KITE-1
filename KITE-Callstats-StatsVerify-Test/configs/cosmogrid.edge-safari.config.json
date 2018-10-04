@@ -1,10 +1,10 @@
 {
   "name": "local selenium example",
-  "callback": "https://webrtc-stats.callstats.io/api/v1/testresults",
+  "_callback": "https://webrtc-stats.callstats.io/api/v1/testresults",
   "remotes": [
     {
       "type": "local",
-      "remoteAddress": "http://localhost:4444/wd/hub"
+      "remoteAddress": "http://192.168.2.2:4444/wd/hub"
     }
   ],
   "tests": [
@@ -18,8 +18,15 @@
   "browsers": [
     {
       "browserName": "chrome",
-      "version": "68",
-      "platform": "WINDOWS"
+      "version": "71",
+      "platform": "WINDOWS",
+      "focus": true
+    },
+    {
+      "browserName": "MicrosoftEdge",
+      "version": "42.17134",
+      "platform": "WINDOWS",
+      "focus": false
     }
   ]
 }

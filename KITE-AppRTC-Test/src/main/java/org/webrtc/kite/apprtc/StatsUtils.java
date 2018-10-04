@@ -95,7 +95,7 @@ public class StatsUtils {
       Map<String, Object> properties = new LinkedHashMap<>(1);
       properties.put(JsonGenerator.PRETTY_PRINTING, true);
       String jsonFilename =
-          testName.replace(" ", "")
+          testName.replace(" ", "").replaceAll("[^A-Za-z0-9()\\[\\]]", "")
               + "_"
               + new SimpleDateFormat("yyyyMMdd_hhmmss").format(new Date())
               + ".json";
@@ -374,34 +374,39 @@ public class StatsUtils {
     long tsStart = 0;
     long tsEnd = 0;
     long avgBitrate = 0;
-    if (noStats < 2) {
-      return "Error: less than 2 stats";
-    }
-    String jsonObjName = getJsonObjectName(direction, mediaType);
-    String jsonKey = getJsonKey(direction);
-    for (int i = 0; i < noStats; i++) {
-      String s = jsonObject.getJsonObject(jsonObjName + i).getString(jsonKey);
-      if (s != null && !"NA".equals(s) && isLong(s)) {
-        long b = Long.parseLong(s);
-        bytesStart = (bytesStart == 0 || b < bytesStart) ? b : bytesStart;
-        bytesEnd = (bytesEnd == 0 || b > bytesEnd) ? b : bytesEnd;
+    try {
+      if (noStats < 2) {
+        return "Error: less than 2 stats";
       }
-      String ts = jsonObject.getJsonObject(jsonObjName + i).getString("timestamp");
-      if (ts != null && !"NA".equals(ts) && isLong(ts)) {
-        long b = Long.parseLong(ts);
-        if (i == 0) {
-          tsStart = b;
+      String jsonObjName = getJsonObjectName(direction, mediaType);
+      String jsonKey = getJsonKey(direction);
+      for (int i = 0; i < noStats; i++) {
+        String s = jsonObject.getJsonObject(jsonObjName + i).getString(jsonKey);
+        if (s != null && !"NA".equals(s) && isLong(s)) {
+          long b = Long.parseLong(s);
+          bytesStart = (bytesStart == 0 || b < bytesStart) ? b : bytesStart;
+          bytesEnd = (bytesEnd == 0 || b > bytesEnd) ? b : bytesEnd;
         }
-        if (i == noStats - 1) {
-          tsEnd = b;
+        String ts = jsonObject.getJsonObject(jsonObjName + i).getString("timestamp");
+        if (ts != null && !"NA".equals(ts) && isLong(ts)) {
+          long b = Long.parseLong(ts);
+          if (i == 0) {
+            tsStart = b;
+          }
+          if (i == noStats - 1) {
+            tsEnd = b;
+          }
         }
       }
-    }
-    if (tsEnd != tsStart) {
-      long timediff = (tsEnd - tsStart);
-      avgBitrate = (8000000 * (bytesEnd - bytesStart)) / timediff;
-      avgBitrate = (avgBitrate < 0) ? avgBitrate * -1 : avgBitrate;
-      return "" + (avgBitrate);
+      if (tsEnd != tsStart) {
+        long timediff = (tsEnd - tsStart);
+        avgBitrate = (8000000 * (bytesEnd - bytesStart)) / timediff;
+        avgBitrate = (avgBitrate < 0) ? avgBitrate * -1 : avgBitrate;
+        return "" + (avgBitrate);
+      }
+    } catch (NullPointerException npe) {
+      logger.error("NullPointerException in computeBitrate.");
+      npe.printStackTrace();
     }
     return "";
   }
@@ -447,12 +452,17 @@ public class StatsUtils {
   private static String computeRoundTripTime(JsonObject jsonObject, int noStats) {
     double rtt = 0;
     int ct = 0;
-    for (int i = 0; i < noStats; i++) {
-      String s = jsonObject.getJsonObject("candidate-pair_" + i).getString("totalRoundTripTime");
-      if (s != null && !"NA".equals(s) && !"0".equals(s) && isDouble(s)) {
-        rtt += 1000 * Double.parseDouble(s);
-        ct++;
+    try {
+      for (int i = 0; i < noStats; i++) {
+        String s = jsonObject.getJsonObject("candidate-pair_" + i).getString("totalRoundTripTime");
+        if (s != null && !"NA".equals(s) && !"0".equals(s) && isDouble(s)) {
+          rtt += 1000 * Double.parseDouble(s);
+          ct++;
+        }
       }
+    } catch (NullPointerException npe) {
+      logger.error("Unable to find totalRoundTripTime in the stats. ");
+      npe.printStackTrace();
     }
     if (ct > 0) {
       return "" + ((int)rtt/ct);
@@ -541,12 +551,17 @@ public class StatsUtils {
    */
   private static String totalBytes(JsonObject jsonObject, int noStats, String direction) {
     long bytes = 0;
-    for (int i = 0; i < noStats; i++) {
-      String s = jsonObject.getJsonObject("candidate-pair_" + i).getString("bytes" + direction);
-      if (s != null && !"NA".equals(s) && isLong(s)) {
-        long b = Long.parseLong(s);
-        bytes = Math.max(b, bytes);
+    try {
+      for (int i = 0; i < noStats; i++) {
+        String s = jsonObject.getJsonObject("candidate-pair_" + i).getString("bytes" + direction);
+        if (s != null && !"NA".equals(s) && isLong(s)) {
+          long b = Long.parseLong(s);
+          bytes = Math.max(b, bytes);
+        }
       }
+    } catch (NullPointerException npe) {
+      logger.error("Unable to find \"bytes" + direction + "\" in the stats. ");
+      npe.printStackTrace();
     }
     return "" + bytes;
   }

@@ -1,0 +1,37 @@
+{
+  "instances": [
+    {
+      "_id": "1",
+      "name": "Alice Gateway",
+      "ipAddress": "18.213.37.238",
+      "username": "ec2-user",
+      "keyFilePath": "file://~/.ssh/callstatsKey.pem"
+    }
+  ],
+  "scenarios": [
+    {
+      "instanceId": "1",
+      "name": "command: sudo tc qdisc add dev eth1 root netem delay 20ms",
+      "interfaces": [
+        "eth1", "eth2"
+      ],
+      "command": "sudo tc qdisc add dev eth1 root netem delay 20ms"
+    },
+    {
+      "instanceId": "1",
+      "name": "BW limit to 800kbps on eth1 and eth2",
+      "interfaces": [
+        "eth1", "eth2"
+      ],
+      "bandwidth": 800
+    },
+    {
+      "instanceId": "1",
+      "name": "200ms latency on eth1 and eth2",
+      "interfaces": [
+        "eth1", "eth2"
+      ],
+      "latency": 200
+    }
+  ]
+}
