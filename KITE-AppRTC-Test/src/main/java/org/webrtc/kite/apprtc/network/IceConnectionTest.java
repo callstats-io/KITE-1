@@ -240,6 +240,7 @@ public class IceConnectionTest extends KiteTest {
       if (true || printToCSV) {
         JsonObjectBuilder jsonBuilder = Json.createObjectBuilder();
         jsonBuilder.add("browser", browser);
+        jsonBuilder.add("result", result);
         jsonBuilder.add("commandName", commandName);
         jsonBuilder.add("name", name);
         JsonObjectBuilder jbuilder = StatsUtils.extractStats(jsonObj);

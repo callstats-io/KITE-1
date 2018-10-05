@@ -11,11 +11,19 @@
   "scenarios": [
     {
       "instanceId": "1",
+      "name": "Benchmark (no tc command)",
+      "interfaces": [
+        "eth1"
+      ],
+      "commands": ["echo Do nothing."]
+    },
+    {
+      "instanceId": "1",
       "name": "command: sudo tc qdisc add dev eth1 root netem delay 20ms",
       "interfaces": [
         "eth1", "eth2"
       ],
-      "command": "sudo tc qdisc add dev eth1 root netem delay 20ms"
+      "commands": ["sudo tc qdisc add dev eth1 root netem delay 20ms"]
     },
     {
       "instanceId": "1",

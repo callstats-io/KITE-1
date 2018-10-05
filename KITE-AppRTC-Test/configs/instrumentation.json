@@ -25,11 +25,19 @@
   "scenarios": [
     {
       "instanceId": "1",
-      "name": "Baseline test",
+      "name": "Benchmark (no tc command)",
       "interfaces": [
         "eth1"
       ],
-      "latency": 1
+      "commands": ["echo Do nothing."]
+    },
+    {
+      "instanceId": "1",
+      "name": "command: sudo tc qdisc add dev eth1 root netem delay 20ms",
+      "interfaces": [
+        "eth1", "eth2"
+      ],
+      "commands": ["sudo tc qdisc add dev eth1 root netem delay 20ms"]
     },
     {
       "instanceId": "1",
@@ -50,19 +58,19 @@
     },
     {
       "instanceId": "1",
-      "name": "200ms latency on eth1 and eth2",
+      "name": "50ms latency on eth1 and eth2",
       "interfaces": [
         "eth1", "eth2"
       ],
-      "latency": 200
+      "latency": 50
     },
     {
       "instanceId": "2",
-      "name": "600ms latency on eth1",
+      "name": "100ms latency on eth1",
       "interfaces": [
         "eth1"
       ],
-      "latency": 600
+      "latency": 100
     },
     {
       "instanceId": "2",

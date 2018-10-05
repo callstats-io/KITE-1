@@ -310,6 +310,7 @@ public class Scenario extends KiteConfigObject {
         int latency = this.latency > 0 ? this.latency : 10;
         builder.append(String.format("sudo tc qdisc add dev %s root tbf rate %dkbit burst 10kb latency %dms" + pipe,
                 nic, this.bandwidth, latency));
+        noCommand = false;
       }
       if (noCommand && this.latency > 0) {
         builder.append(tcCommand(nic, "", 0, this.latency, 0));

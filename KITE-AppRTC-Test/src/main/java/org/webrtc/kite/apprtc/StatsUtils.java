@@ -285,6 +285,15 @@ public class StatsUtils {
         return o;
       }
     }
+    for (String key: candObj.keySet()) {
+      //sometimes there are no "succeeded" pair, but the "in-progress" with
+      //a valid currentRoundTripTime value looks just fine.
+      JsonObject o = candObj.getJsonObject(key);
+      if ("in-progress".equals(o.getString("state")) &&
+              !"NA".equals(o.getString("currentRoundTripTime"))) {
+        return o;
+      }
+    }
     return null;
   }
 
@@ -339,7 +348,8 @@ public class StatsUtils {
     }
     JsonObject result = mainBuilder.build();
     JsonObjectBuilder csvBuilder = Json.createObjectBuilder();
-    csvBuilder.add("totalRoundTripTime (ms)", computeRoundTripTime(result, noStats));
+    csvBuilder.add("currentRoundTripTime (ms)", computeRoundTripTime(result, noStats, "current"));
+    csvBuilder.add("totalRoundTripTime (ms)", computeRoundTripTime(result, noStats, "total"));
     csvBuilder.add("totalBytesReceived (Bytes)", totalBytes(result, noStats, "Received"));
     csvBuilder.add("totalBytesSent (Bytes)", totalBytes(result, noStats, "Sent"));
     csvBuilder.add("avgSentBitrate (bps)", computeBitrate(result, noStats, "Sent", "candidate-pair"));
@@ -380,6 +390,11 @@ public class StatsUtils {
       }
       String jsonObjName = getJsonObjectName(direction, mediaType);
       String jsonKey = getJsonKey(direction);
+      boolean debug = false;
+      if (debug) {
+        logger.info("-----------------------------");
+        logger.info(" jsonKey:     \" + jsonKey);");
+      }
       for (int i = 0; i < noStats; i++) {
         String s = jsonObject.getJsonObject(jsonObjName + i).getString(jsonKey);
         if (s != null && !"NA".equals(s) && isLong(s)) {
@@ -397,16 +412,31 @@ public class StatsUtils {
             tsEnd = b;
           }
         }
+        if (debug) {
+          logger.info("jsonObjName: " + jsonObjName + i);
+          logger.info("jsonKey:     " + jsonKey);
+          logger.info("bytesEnd:   " + bytesEnd);
+          logger.info("bytesStart: " + bytesStart);
+          logger.info("tsEnd:   " + tsEnd);
+          logger.info("tsStart: " + tsStart);
+        }
       }
+
       if (tsEnd != tsStart) {
         long timediff = (tsEnd - tsStart);
-        avgBitrate = (8000000 * (bytesEnd - bytesStart)) / timediff;
+        avgBitrate = (8000 * (bytesEnd - bytesStart)) / timediff;
         avgBitrate = (avgBitrate < 0) ? avgBitrate * -1 : avgBitrate;
+        if (debug) {
+          logger.info(
+              "computeBitrate()(8000 * ( " + bytesEnd + " - " + bytesStart + " )) /" + timediff);
+        }
         return "" + (avgBitrate);
+      } else {
+        logger.error("computeBitrate() tsEnd == tsStart : " + tsEnd + " , " + tsStart);
       }
     } catch (NullPointerException npe) {
-      logger.error("NullPointerException in computeBitrate.");
-      npe.printStackTrace();
+      logger.error("NullPointerException in computeBitrate");
+      logger.error("" + Utility.getStackTrace(npe));
     }
     return "";
   }
@@ -449,20 +479,20 @@ public class StatsUtils {
    * @param noStats how many stats in jsonObject
    * @return the average of valid (> 0) "totalRoundTripTime"
    */
-  private static String computeRoundTripTime(JsonObject jsonObject, int noStats) {
+  private static String computeRoundTripTime(JsonObject jsonObject, int noStats, String prefix) {
     double rtt = 0;
     int ct = 0;
     try {
       for (int i = 0; i < noStats; i++) {
-        String s = jsonObject.getJsonObject("candidate-pair_" + i).getString("totalRoundTripTime");
+        String s = jsonObject.getJsonObject("candidate-pair_" + i).getString(prefix + "RoundTripTime");
         if (s != null && !"NA".equals(s) && !"0".equals(s) && isDouble(s)) {
           rtt += 1000 * Double.parseDouble(s);
           ct++;
         }
       }
     } catch (NullPointerException npe) {
-      logger.error("Unable to find totalRoundTripTime in the stats. ");
-      npe.printStackTrace();
+      logger.error("Unable to find " + prefix + "RoundTripTime in the stats. ");
+      logger.error("" + Utility.getStackTrace(npe));
     }
     if (ct > 0) {
       return "" + ((int)rtt/ct);
@@ -536,7 +566,7 @@ public class StatsUtils {
 
       }
     } catch (Exception e) {
-      e.printStackTrace();
+      logger.error("" + Utility.getStackTrace(e));
     }
     return "";
   }
@@ -561,7 +591,7 @@ public class StatsUtils {
       }
     } catch (NullPointerException npe) {
       logger.error("Unable to find \"bytes" + direction + "\" in the stats. ");
-      npe.printStackTrace();
+      logger.error("" + Utility.getStackTrace(npe));
     }
     return "" + bytes;
   }

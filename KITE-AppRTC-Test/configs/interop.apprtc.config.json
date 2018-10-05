@@ -1,7 +1,7 @@
 {
   "type": 1,
   "name": "interop.jitsi.config.json",
-  "instrumentUrl": "file:///GitHub/KITE-Manu-NW-Inst/KITE-AppRTC-Test/configs/instrumentation3.json",
+  "instrumentUrl": "file:///GitHub/KITE-Manu-NW-Inst/KITE-AppRTC-Test/configs/instrumentation.json",
   "remotes": [
     {
       "type": "local",
@@ -17,25 +17,28 @@
       "payload": {
         "printToCSV": true,
         "printToJson": true,
-        "statsCollectionTime": 8,
-        "statsCollectionInterval": 4,
+        "statsCollectionTime": 16,
+        "statsCollectionInterval": 8,
         "selectedStats": ["inbound-rtp", "outbound-rtp", "candidate-pair"]
       }
     }
   ],
   "browsers": [
     {
-      "browserName": "firefox",
-      "version": "62",
+      "browserName": "chrome",
+      "version": "67",
       "platform": "LINUX",
+      "fakeMediaFile": "/home/ubuntu/e-dv548_lwe08_christa_casebeer_003.y4m",
+      "fakeMediaAudio": "/home/ubuntu/e-dv548_lwe08_christa_casebeer_003.wav",
       "headless": true
     }
   ],
   "_browsers": [
     {
       "browserName": "firefox",
-      "version": "61",
-      "platform": "LINUX"
+      "version": "62",
+      "platform": "LINUX",
+      "headless": true
     },
     {
       "browserName": "chrome",

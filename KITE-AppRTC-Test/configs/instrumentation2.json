@@ -16,6 +16,14 @@
         "eth1"
       ],
       "latency": 1
+    },
+    {
+      "instanceId": "1",
+      "name": "BW limit to 800kbps on eth1 and eth2",
+      "interfaces": [
+        "eth1", "eth2"
+      ],
+      "bandwidth": 800
     }
   ]
 }
