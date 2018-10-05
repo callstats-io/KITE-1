@@ -547,8 +547,10 @@ public class Utility {
             //format 1.536834943435905E12 to 1536834943435905
             str = "1" + str.substring(str.indexOf(".") + 1, str.indexOf("E"));
         }
-        //convert timestamps to millisecond (obtained in nano seconds)
-        str = str.substring(0, 13);
+        if (str.length() > 13) {
+          // convert timestamps to millisecond (obtained in nano seconds)
+          str = str.substring(0, 13);
+        }
         return str;
     }
 
