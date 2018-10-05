@@ -83,19 +83,7 @@ public class WebAudioInputTest extends KiteTest {
         throw new Exception("No URL was specified");
       }
       webDriver.get(url);
-      try {
-        Alert alert = webDriver.switchTo().alert();
-        ////alertMsg = alert.getText();URL
-        if (alertMsg != null) {
-          alertMsg =
-              ((RemoteWebDriver) webDriver).getCapabilities().getBrowserName()
-                  + " alert: "
-                  + alertMsg;
-          alert.accept();
-        }
-      } catch (NoAlertPresentException e) {
-        alertMsg = null;
-      }
+      alertMsg = alertHandling(webDriver);
     }
   }
 

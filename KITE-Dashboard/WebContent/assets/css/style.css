@@ -50,6 +50,10 @@ a {
   color:black;
 }
 
+.test-link {
+  color: blue;
+}
+
 .detail {
   cursor: pointer;
 }
