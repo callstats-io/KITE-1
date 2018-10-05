@@ -1,6 +1,6 @@
 {
   "name": "local selenium example",
-  "_callback": "https://webrtc-stats.callstats.io/api/v1/testresults",
+  "callback": "https://webrtc-stats.callstats.io/api/v1/testresults",
   "remotes": [
     {
       "type": "local",
@@ -17,6 +17,21 @@
   ],
   "browsers": [
     {
+      "browserName": "safari",
+      "platform": "MAC",
+      "version": "12.1",
+      "technologyPreview": true,
+      "focus": false
+    },
+    {
+      "browserName": "safari",
+      "version": "12",
+      "platform": "MAC",
+      "focus": true
+    }
+  ],
+  "_browsers": [
+    {
       "browserName": "chrome",
       "version": "71",
       "platform": "WINDOWS",
@@ -26,6 +41,25 @@
       "browserName": "MicrosoftEdge",
       "version": "42.17134",
       "platform": "WINDOWS",
+      "focus": false
+    },
+    {
+      "browserName": "MicrosoftEdge",
+      "version": "42.17758",
+      "platform": "WINDOWS",
+      "focus": false
+    },
+    {
+      "browserName": "safari",
+      "version": "12",
+      "platform": "MAC",
+      "focus": false
+    },
+    {
+      "browserName": "Safari Technology Preview",
+      "version": "12.1",
+      "platform": "MAC",
+      "technologyPreview": true,
       "focus": false
     }
   ]

@@ -25,6 +25,19 @@
   ],
   "browsers": [
     {
+      "browserName": "firefox",
+      "version": "62",
+      "platform": "LINUX",
+      "headless": true
+    }
+  ],
+  "_browsers": [
+    {
+      "browserName": "firefox",
+      "version": "61",
+      "platform": "LINUX"
+    },
+    {
       "browserName": "chrome",
       "version": "67",
       "platform": "LINUX",

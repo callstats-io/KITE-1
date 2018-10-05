@@ -98,7 +98,7 @@ public class WebDriverFactory {
       capabilities.setCapability("id", id);
     }
 
-    switch (browser.getBrowserName()) {
+    switch (browser.getBrowserName().toLowerCase()) {
       case "chrome":
         ChromeOptions chromeOptions = new ChromeOptions();
         chromeOptions.addArguments("use-fake-ui-for-media-stream");
@@ -164,18 +164,14 @@ public class WebDriverFactory {
         capabilities.merge(firefoxOptions);
         //  capabilities.setCapability(FirefoxOptions.FIREFOX_OPTIONS, firefoxProfile);
         break;
-      case "MicrosoftEdge":
-        // capabilities = DesiredCapabilities.edge();
-        EdgeOptions MicrosoftEdgeOptions = new EdgeOptions();
-        capabilities.setCapability("edgeOptions", MicrosoftEdgeOptions);
-        capabilities.setCapability("avoidProxy", true);
-        break;
+      case "microsoftedge":
       case "edge":
         // capabilities = DesiredCapabilities.edge();
         EdgeOptions edgeOptions = new EdgeOptions();
         capabilities.setCapability("edgeOptions", edgeOptions);
         capabilities.setCapability("avoidProxy", true);
         break;
+      case "safari technology preview":
       case "safari":
         SafariOptions options = new SafariOptions();
         if (browser.isTechnologyPreview()) {
