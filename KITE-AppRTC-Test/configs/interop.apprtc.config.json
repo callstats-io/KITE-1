@@ -1,7 +1,7 @@
 {
   "type": 1,
   "name": "interop.jitsi.config.json",
-  "instrumentUrl": "file:///GitHub/KITE-Manu-NW-Inst/KITE-AppRTC-Test/configs/instrumentation.json",
+  "instrumentUrl": "file:///GitHub/KITE-Manu-NW-Inst/KITE-AppRTC-Test/configs/instrumentation2.json",
   "remotes": [
     {
       "type": "local",
@@ -25,11 +25,9 @@
   ],
   "browsers": [
     {
-      "browserName": "chrome",
-      "version": "67",
+      "browserName": "firefox",
+      "version": "62",
       "platform": "LINUX",
-      "fakeMediaFile": "/home/ubuntu/e-dv548_lwe08_christa_casebeer_003.y4m",
-      "fakeMediaAudio": "/home/ubuntu/e-dv548_lwe08_christa_casebeer_003.wav",
       "headless": true
     }
   ],

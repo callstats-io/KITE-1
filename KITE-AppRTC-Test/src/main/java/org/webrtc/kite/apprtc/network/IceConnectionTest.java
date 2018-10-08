@@ -249,6 +249,7 @@ public class IceConnectionTest extends KiteTest {
         }
         ts.println(jsonBuilder.build(), "results/");
       }
+      ts.close();
       return jsonObj;
 
 
